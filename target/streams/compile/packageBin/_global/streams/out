@@ -66,6 +66,8 @@
 [debug] 	  C:\dpetapi\target\scala-2.12\classes\com\ynap\dpetapi\endpoints\hello\HelloHandlerImpl.class
 [debug] 	com\ynap\dpetapi\endpoints\hello\HelloResource$$anonfun$routes$1.class
 [debug] 	  C:\dpetapi\target\scala-2.12\classes\com\ynap\dpetapi\endpoints\hello\HelloResource$$anonfun$routes$1.class
+[debug] 	com\ynap\dpetapi\endpoints\hello\HelloResource$GetHelloNameMatcher$.class
+[debug] 	  C:\dpetapi\target\scala-2.12\classes\com\ynap\dpetapi\endpoints\hello\HelloResource$GetHelloNameMatcher$.class
 [debug] 	com\ynap\dpetapi\endpoints\hello\HelloResource.class
 [debug] 	  C:\dpetapi\target\scala-2.12\classes\com\ynap\dpetapi\endpoints\hello\HelloResource.class
 [debug] 	com\ynap\dpetapi\endpoints\Http4sImplicits$.class

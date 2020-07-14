@@ -11,6 +11,8 @@ paths:
       x-scala-package: hello
       operationId: getHello
       summary: Returns a hello message
+      parameters:
+        - $ref: '#/components/parameters/NameParam'
       responses:
         200:
           description: Hello message
@@ -19,7 +21,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/HelloResponse'
 
-  /farewell:
+  /farewell/{forename}/surname/{surname}:
+    parameters:
+      - name: forename
+        in: path
+        required: true
+        description: the forename identifier, as personId
+        schema:
+          type: string
+      - name: surname
+        in: path
+        required: true
+        description: the surname identifier, as personId
+        schema:
+          type: string
     get:
       tags: [farewell]
       x-scala-package: farewell
@@ -34,6 +49,14 @@ paths:
                 $ref: '#/components/schemas/FarewellResponse'
 
 components:
+  parameters:
+    NameParam:
+      name: name
+      in: query
+      description: Name to greet
+      schema:
+        type: string
+
   schemas:
     HelloResponse:
       type: object
