@@ -18,9 +18,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HelloResponse'
+
+  /farewell:
+    get:
+      tags: [farewell]
+      x-scala-package: farewell
+      operationId: getFarewell
+      summary: Returns a farewell message
+      responses:
+        200:
+          description: Farewell message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarewellResponse'
+
 components:
   schemas:
     HelloResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    FarewellResponse:
       type: object
       properties:
         message:

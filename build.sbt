@@ -1,5 +1,5 @@
 val Http4sVersion = "0.20.23"
-val CirceVersion = "0.11.2"
+val CirceVersion = "0.11.1"
 val Specs2Version = "4.1.0"
 val LogbackVersion = "1.2.3"
 
@@ -15,6 +15,7 @@ lazy val root = (project in file("."))
       "org.http4s"      %% "http4s-circe"        % Http4sVersion,
       "org.http4s"      %% "http4s-dsl"          % Http4sVersion,
       "io.circe"        %% "circe-generic"       % CirceVersion,
+      "io.circe"        %% "circe-java8"         % CirceVersion,
       "org.specs2"      %% "specs2-core"         % Specs2Version % "test",
       "ch.qos.logback"  %  "logback-classic"     % LogbackVersion
     ),
@@ -30,4 +31,13 @@ scalacOptions ++= Seq(
   "-feature",
   "-Ypartial-unification",
   "-Xfatal-warnings",
+)
+
+guardrailTasks in Compile := List(
+  ScalaServer(
+    specPath = (Compile / resourceDirectory).value / "api.yaml",
+    pkg = "com.ynap.dpetapi.endpoints",
+    framework = "http4s",
+    tracing = false
+  )
 )
