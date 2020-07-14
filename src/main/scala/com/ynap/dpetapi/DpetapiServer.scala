@@ -14,6 +14,7 @@ object DpetapiServer {
   def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
     for {
       client <- BlazeClientBuilder[F](global).stream
+      dpetApiAlg = ApiStaticData.impl[F]
       helloWorldAlg = HelloWorld.impl[F]
       jokeAlg = Jokes.impl[F](client)
 
@@ -23,6 +24,7 @@ object DpetapiServer {
       // in the underlying routes.
       httpApp = (
         DpetapiRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
+          DpetapiRoutes.dpetApiRoutes[F](dpetApiAlg) <+>
         DpetapiRoutes.jokeRoutes[F](jokeAlg)
       ).orNotFound
 
