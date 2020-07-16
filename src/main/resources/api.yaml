@@ -1,6 +1,6 @@
 openapi: "3.0.0"
 info:
-  title: http4s Guardrail example
+  title: DPET API definition
   version: 0.0.1
 tags:
   - name: hello
@@ -22,24 +22,24 @@ paths:
                 $ref: '#/components/schemas/HelloResponse'
 
   /farewell/{forename}/surname/{surname}:
-    parameters:
-      - name: forename
-        in: path
-        required: true
-        description: the forename identifier, as personId
-        schema:
-          type: string
-      - name: surname
-        in: path
-        required: true
-        description: the surname identifier, as personId
-        schema:
-          type: string
     get:
       tags: [farewell]
       x-scala-package: farewell
       operationId: getFarewell
       summary: Returns a farewell message
+      parameters:
+        - name: forename
+          in: path
+          required: true
+          description: the forename identifier, as personId
+          schema:
+            type: string
+        - name: surname
+          in: path
+          required: true
+          description: the surname identifier, as personId
+          schema:
+            type: string
       responses:
         200:
           description: Farewell message
@@ -47,6 +47,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FarewellResponse'
+
+  /accounts:
+    get:
+      tags: [accounts]
+      x-scala-package: accounts
+      operationId: getAccounts
+      summary: Returns a list of accounts
+      responses:
+        200:
+          description: Accounts message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsResponse'
 
 components:
   parameters:
@@ -58,6 +72,14 @@ components:
         type: string
 
   schemas:
+    AccountsResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
     HelloResponse:
       type: object
       properties:
