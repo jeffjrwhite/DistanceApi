@@ -6,7 +6,7 @@ import io.circe.generic.auto._
 
 case class ServerConfig(port: Int, host: String)
 
-case class DbConfig(url: String, username: String, password: String, poolSize: Int)
+case class DbConfig(url: String, driver: String, username: String, password: String, poolSize: Int)
 
 case class Config(serverConfig: ServerConfig, dbConfig: DbConfig)
 

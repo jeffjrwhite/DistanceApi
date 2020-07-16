@@ -48,21 +48,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/FarewellResponse'
 
-  /accounts:
+  /divisions:
     get:
-      tags: [accounts]
-      x-scala-package: accounts
-      operationId: getAccounts
-      summary: Returns a list of accounts
+      tags: [divisions]
+      x-scala-package: divisions
+      operationId: getDivisions
+      summary: Returns a list of divisions
       responses:
         200:
-          description: Accounts message
+          description: Divisions message
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountsResponse'
+                $ref: '#/components/schemas/DivisionsResponse'
 
 components:
+
   parameters:
     NameParam:
       name: name
@@ -72,13 +73,20 @@ components:
         type: string
 
   schemas:
-    AccountsResponse:
+    DivisionsResponse:
       type: object
       properties:
-        message:
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/link'
+    link:
+      type: object
+      properties:
+        ID_Divisione:
           type: string
-      required:
-        - message
+        Divisione:
+          type: string
 
     HelloResponse:
       type: object

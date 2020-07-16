@@ -48,3 +48,12 @@ guardrailTasks in Compile := List(
     tracing = false
   )
 )
+
+fork in Test := true
+autoAPIMappings := true
+unmanagedBase := baseDirectory.value / "libs"
+unmanagedJars in Compile += file("libs")
+publishTo := Some("Artifactory Realm" at "http://artifactory.yoox.net/artifactory/dpet-repo")
+credentials += Credentials("Artifactory Realm", "artifactory.yoox.net", "svc_dataprovisioning", "AP7qcVPRkTLXDyeXmNpVdZ4Mykz")
+resolvers += "Artifactory" at "http://artifactory.yoox.net/artifactory/tesla-repo/"
+resolvers += "Artifactory" at "http://artifactory.yoox.net/artifactory/dpet-repo/"

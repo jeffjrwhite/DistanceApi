@@ -14,6 +14,7 @@ object Database {
     config.setJdbcUrl(dbConfig.url)
     config.setUsername(dbConfig.username)
     config.setPassword(dbConfig.password)
+    config.setDriverClassName(dbConfig.driver)
     config.setMaximumPoolSize(dbConfig.poolSize)
 
     // transactor with config
@@ -22,8 +23,7 @@ object Database {
     transactor
   }
 
-  def bootstrap(xa: Transactor[IO]): IO[Int] = {
-    AccountQuery.createTable.run.transact(xa)
-  }
-
+//  def bootstrap(xa: Transactor[IO]): IO[Int] = {
+    //AccountQuery.createTable.run.transact(xa)
+//  }
 }
