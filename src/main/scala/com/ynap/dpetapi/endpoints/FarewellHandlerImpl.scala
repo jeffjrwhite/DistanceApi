@@ -1,4 +1,4 @@
-package com.ynap.dpetapi.endpoints.hello
+package com.ynap.dpetapi.endpoints
 
 import cats.Applicative
 import cats.implicits._

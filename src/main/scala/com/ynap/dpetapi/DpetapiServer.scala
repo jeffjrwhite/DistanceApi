@@ -2,10 +2,11 @@ package com.ynap.dpetapi
 
 import cats.effect.{ConcurrentEffect, ContextShift, Timer}
 import cats.implicits._
+import com.ynap.dpetapi.endpoints.accounts.AccountsResource
+import com.ynap.dpetapi.endpoints.{AccountsHandlerImpl, FarewellHandlerImpl, HelloHandlerImpl}
 import com.ynap.dpetapi.endpoints.farewell.FarewellResource
-import com.ynap.dpetapi.endpoints.hello.{FarewellHandlerImpl, HelloHandlerImpl, HelloResource}
+import com.ynap.dpetapi.endpoints.hello.HelloResource
 import fs2.Stream
-import org.http4s.HttpRoutes
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
@@ -21,6 +22,7 @@ object DpetapiServer {
       httpApp = (
           new HelloResource().routes(new HelloHandlerImpl())
             <+> new FarewellResource().routes(new FarewellHandlerImpl())
+            <+> new AccountsResource().routes(new AccountsHandlerImpl())
 
         ).orNotFound
 
