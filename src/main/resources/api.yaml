@@ -1,10 +1,25 @@
 openapi: "3.0.0"
 info:
-  title: http4s Guardrail example
+  title: DPET API definition
   version: 0.0.1
 tags:
   - name: hello
 paths:
+  /accounts:
+    get:
+      tags: [accounts]
+      x-scala-package: accounts
+      operationId: getAccounts
+      summary: Returns a list of accounts
+      responses:
+        200:
+          description: Accounts message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsResponse'
+
+
   /hello:
     get:
       tags: [hello]
@@ -58,6 +73,14 @@ components:
         type: string
 
   schemas:
+    AccountsResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
     HelloResponse:
       type: object
       properties:

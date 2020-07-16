@@ -2,7 +2,7 @@ package com.ynap.dpetapi
 
 import doobie.implicits._
 
-object DatabaseQuery {
+object AccountQuery {
 
   def createDb = {
     sql"""

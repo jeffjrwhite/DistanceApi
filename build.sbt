@@ -2,6 +2,7 @@ val Http4sVersion = "0.20.23"
 val CirceVersion = "0.11.1"
 val Specs2Version = "4.1.0"
 val LogbackVersion = "1.2.3"
+lazy val doobieVersion = "0.5.4"
 
 lazy val root = (project in file("."))
   .settings(
@@ -10,6 +11,12 @@ lazy val root = (project in file("."))
     version := "0.0.1-SNAPSHOT",
     scalaVersion := "2.12.11",
     libraryDependencies ++= Seq(
+      "org.tpolecat"          %% "doobie-core"            % doobieVersion,
+      "org.tpolecat"          %% "doobie-h2"              % doobieVersion,
+      "org.tpolecat"          %% "doobie-hikari"          % doobieVersion,
+      "org.tpolecat"          %% "doobie-specs2"          % doobieVersion,
+      "io.circe"              %% "circe-core"             % CirceVersion,
+      "io.circe"              %% "circe-config"           % "0.6.1",
       "org.http4s"      %% "http4s-blaze-server" % Http4sVersion,
       "org.http4s"      %% "http4s-blaze-client" % Http4sVersion,
       "org.http4s"      %% "http4s-circe"        % Http4sVersion,
