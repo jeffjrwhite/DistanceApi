@@ -2,11 +2,15 @@ package com.ynap.dpetapi
 
 import cats.effect.{ConcurrentEffect, ContextShift, Timer}
 import cats.implicits._
+import com.ynap.dpetapi.endpoints.farewell.FarewellResource
+import com.ynap.dpetapi.endpoints.hello.{FarewellHandlerImpl, HelloHandlerImpl, HelloResource}
 import fs2.Stream
+import org.http4s.HttpRoutes
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.Logger
+
 import scala.concurrent.ExecutionContext.global
 
 object DpetapiServer {
@@ -14,21 +18,12 @@ object DpetapiServer {
   def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
     for {
       client <- BlazeClientBuilder[F](global).stream
-      dpetApiAlg = ApiStaticData.impl[F]
-      helloWorldAlg = HelloWorld.impl[F]
-      jokeAlg = Jokes.impl[F](client)
-
-      // Combine Service Routes into an HttpApp.
-      // Can also be done via a Router if you
-      // want to extract a segments not checked
-      // in the underlying routes.
       httpApp = (
-        DpetapiRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
-          DpetapiRoutes.dpetApiRoutes[F](dpetApiAlg) <+>
-        DpetapiRoutes.jokeRoutes[F](jokeAlg)
-      ).orNotFound
+          new HelloResource().routes(new HelloHandlerImpl())
+            <+> new FarewellResource().routes(new FarewellHandlerImpl())
 
-      // With Middlewares in place
+        ).orNotFound
+
       finalHttpApp = Logger.httpApp(true, true)(httpApp)
 
       exitCode <- BlazeServerBuilder[F](global)
