@@ -76,15 +76,10 @@ components:
     DivisionsResponse:
       type: object
       properties:
-        divisionList:
-          type: array
-          items:
-            type: object
-            properties:
-              ID_Divisione:
-                type: string
-              Divisione:
-                type: string
+        message:
+          type: string
+      required:
+        - message
 
     HelloResponse:
       type: object

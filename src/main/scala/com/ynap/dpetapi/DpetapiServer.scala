@@ -17,28 +17,29 @@ import scala.concurrent.ExecutionContext.global
 object DpetapiServer {
 
   def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = {
-
+    //val serverConfig: ServerConfig
+    val svr = for {
+      config <- Stream.eval(Config.load())
+      xa <- Stream.eval(Database.transactor(config.dbConfig))
+    } yield {
+      (config.serverConfig, xa)
+    }
+    val serverConfig = svr.drain
     for {
-            config <- Stream.eval(Config.load())
-            xa <- Stream.eval(Database.transactor(config.dbConfig))
-            //_ <- Stream.eval(Database.bootstrap(xa))
-
       client <- BlazeClientBuilder[F](global).stream
+      //config <- Stream.eval(Config.load())
+      //xa <- Stream.eval(Database.transactor(config.dbConfig))
       httpApp = (
           new HelloResource().routes(new HelloHandlerImpl())
             <+> new FarewellResource().routes(new FarewellHandlerImpl())
-            <+> new DivisionsResource().routes(new DivisionsHandlerImpl(xa))
-
+            <+> new DivisionsResource().routes(new DivisionsHandlerImpl())
         ).orNotFound
 
       finalHttpApp = Logger.httpApp(true, true)(httpApp)
-      serverConfig: ServerConfig = config.serverConfig
-
       exitCode <- BlazeServerBuilder[F](global)
-        .bindHttp(serverConfig.port, serverConfig.host)
+        .bindHttp(8080, "0.0.0.0") //.bindHttp(serverConfig.port, serverConfig.host)
         .withHttpApp(finalHttpApp)
         .serve
     } yield exitCode
   }.drain
-
 }
