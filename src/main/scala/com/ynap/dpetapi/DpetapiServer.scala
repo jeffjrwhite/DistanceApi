@@ -22,22 +22,22 @@ object DpetapiServer {
       config <- Stream.eval(Config.load())
       xa <- Stream.eval(Database.transactor(config.dbConfig))
     } yield {
-      (config.serverConfig, xa)
+      (config.serverConfig,xa)
     }
-    val serverConfig = svr.drain
+    val serverConfig = svr.compile.toList.unsafeRunSync.head._1
+    val xaTransactor = svr.compile.toList.unsafeRunSync.head._2
+
     for {
       client <- BlazeClientBuilder[F](global).stream
-      //config <- Stream.eval(Config.load())
-      //xa <- Stream.eval(Database.transactor(config.dbConfig))
       httpApp = (
           new HelloResource().routes(new HelloHandlerImpl())
             <+> new FarewellResource().routes(new FarewellHandlerImpl())
-            <+> new DivisionsResource().routes(new DivisionsHandlerImpl())
+            <+> new DivisionsResource().routes(new DivisionsHandlerImpl(xaTransactor))
         ).orNotFound
 
       finalHttpApp = Logger.httpApp(true, true)(httpApp)
       exitCode <- BlazeServerBuilder[F](global)
-        .bindHttp(8080, "0.0.0.0") //.bindHttp(serverConfig.port, serverConfig.host)
+        .bindHttp(serverConfig.port, serverConfig.host)
         .withHttpApp(finalHttpApp)
         .serve
     } yield exitCode
