@@ -16,8 +16,8 @@ class DivisionsHandlerImpl[F[_] : Applicative](xa: Transactor[IO]) extends Divis
   override def getDivisions(respond: GetDivisionsResponse.type)(): F[GetDivisionsResponse] = {
     for {
       //message <- s"Divisions...".pure[F]
-      message <-  DivisionQuery.search().to[List]
-    } yield respond.Ok(DivisionsResponse(message))
+      divisionObj <-  DivisionQuery.search().to[List]
+    } yield respond.Ok(DivisionsResponse(divisionObj))
   }
 
 //  override def getDivision(id: String) = {

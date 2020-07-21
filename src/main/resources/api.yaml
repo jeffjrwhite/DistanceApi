@@ -76,17 +76,15 @@ components:
     DivisionsResponse:
       type: object
       properties:
-        links:
+        divisionList:
           type: array
           items:
-            $ref: '#/components/schemas/link'
-    link:
-      type: object
-      properties:
-        ID_Divisione:
-          type: string
-        Divisione:
-          type: string
+            type: object
+            properties:
+              ID_Divisione:
+                type: string
+              Divisione:
+                type: string
 
     HelloResponse:
       type: object
