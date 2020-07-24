@@ -63,7 +63,6 @@ paths:
                 $ref: '#/components/schemas/DivisionsResponse'
 
 components:
-
   parameters:
     NameParam:
       name: name
@@ -76,10 +75,15 @@ components:
     DivisionsResponse:
       type: object
       properties:
-        message:
-          type: string
-      required:
-        - message
+        list:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
 
     HelloResponse:
       type: object
@@ -88,7 +92,6 @@ components:
           type: string
       required:
         - message
-
     FarewellResponse:
       type: object
       properties:
