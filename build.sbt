@@ -8,7 +8,7 @@ lazy val root = (project in file("."))
   .settings(
     organization := "com.ynap",
     name := "dpetapi",
-    version := "0.0.1-SNAPSHOT",
+    version := "1.0.0",
     scalaVersion := "2.12.11",
     libraryDependencies ++= Seq(
       "org.tpolecat"          %% "doobie-core"            % doobieVersion,
