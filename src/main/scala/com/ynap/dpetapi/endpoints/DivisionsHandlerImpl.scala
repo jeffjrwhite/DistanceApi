@@ -21,17 +21,12 @@ class DivisionsHandlerImpl[F[_] : Applicative](xa: Transactor[IO]) extends Divis
     var jsonList: List[io.circe.Json] = for {
       division <- DivisionQuery.search(id).to[List].transact(xa).unsafeRunSync
     } yield {
-      val jsonStr = division.asJson
-      jsonStr
-    }
-    val isJson: IndexedSeq[io.circe.Json] = for {
-      a <- 0 to jsonList.length-1
-    } yield {
-        jsonList(a)
+      division.asJson
     }
     for {
-      list <- isJson.pure[F]
-    } yield respond.Ok(DivisionsResponse(Some(isJson.length), Some(list)))
+      list <- jsonList.toIndexedSeq.pure[F]
+    } yield
+      respond.Ok(DivisionsResponse(Some(list.length), Some(list)))
 
   }
 
