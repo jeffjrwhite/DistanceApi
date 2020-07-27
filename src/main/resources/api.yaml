@@ -3,30 +3,14 @@ info:
   title: DPET API definition
   version: 0.0.1
 tags:
-  - name: hello
+  - name: dpet
 paths:
-  /hello:
+  /example/{forename}/surname/{surname}:
     get:
-      tags: [hello]
-      x-scala-package: hello
-      operationId: getHello
-      summary: Returns a hello message
-      parameters:
-        - $ref: '#/components/parameters/NameParam'
-      responses:
-        200:
-          description: Hello message
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HelloResponse'
-
-  /farewell/{forename}/surname/{surname}:
-    get:
-      tags: [farewell]
-      x-scala-package: farewell
-      operationId: getFarewell
-      summary: Returns a farewell message
+      tags: [example]
+      x-scala-package: example
+      operationId: getExample
+      summary: Returns an example message
       parameters:
         - name: forename
           in: path
@@ -42,53 +26,63 @@ paths:
             type: string
       responses:
         200:
-          description: Farewell message
+          description: Example message
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FarewellResponse'
+                $ref: '#/components/schemas/ExampleResponse'
 
-  /accounts:
+  /divisions:
     get:
-      tags: [accounts]
-      x-scala-package: accounts
-      operationId: getAccounts
-      summary: Returns a list of accounts
+      tags: [divisions]
+      x-scala-package: divisions
+      operationId: getDivisions
+      summary: Returns a list of divisions or a division by id
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+        - $ref: '#/components/parameters/NameParam'
       responses:
         200:
-          description: Accounts message
+          description: Divisions message
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountsResponse'
+                $ref: '#/components/schemas/DivisionsResponse'
 
 components:
   parameters:
     NameParam:
       name: name
       in: query
-      description: Name to greet
+      description: Name of object
+      schema:
+        type: string
+
+    IdParam:
+      name: id
+      in: query
+      description: Id of object to return
       schema:
         type: string
 
   schemas:
-    AccountsResponse:
+    DivisionsResponse:
       type: object
       properties:
-        message:
-          type: string
-      required:
-        - message
+        count:
+          type: integer
+          format: int32
+        divisions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
 
-    HelloResponse:
-      type: object
-      properties:
-        message:
-          type: string
-      required:
-        - message
-
-    FarewellResponse:
+    ExampleResponse:
       type: object
       properties:
         message:

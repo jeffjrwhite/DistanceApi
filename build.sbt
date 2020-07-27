@@ -8,7 +8,7 @@ lazy val root = (project in file("."))
   .settings(
     organization := "com.ynap",
     name := "dpetapi",
-    version := "0.0.1-SNAPSHOT",
+    version := "1.0.0",
     scalaVersion := "2.12.11",
     libraryDependencies ++= Seq(
       "org.tpolecat"          %% "doobie-core"            % doobieVersion,
@@ -24,7 +24,8 @@ lazy val root = (project in file("."))
       "io.circe"        %% "circe-generic"       % CirceVersion,
       "io.circe"        %% "circe-java8"         % CirceVersion,
       "org.specs2"      %% "specs2-core"         % Specs2Version % "test",
-      "ch.qos.logback"  %  "logback-classic"     % LogbackVersion
+      "ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
+      "net.liftweb" %% "lift-json" % "3.3.0"
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
     addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.0")
@@ -48,3 +49,12 @@ guardrailTasks in Compile := List(
     tracing = false
   )
 )
+
+fork in Test := true
+autoAPIMappings := true
+unmanagedBase := baseDirectory.value / "libs"
+unmanagedJars in Compile += file("libs")
+publishTo := Some("Artifactory Realm" at "http://artifactory.yoox.net/artifactory/dpet-repo")
+credentials += Credentials("Artifactory Realm", "artifactory.yoox.net", "svc_dataprovisioning", "AP7qcVPRkTLXDyeXmNpVdZ4Mykz")
+resolvers += "Artifactory" at "http://artifactory.yoox.net/artifactory/tesla-repo/"
+resolvers += "Artifactory" at "http://artifactory.yoox.net/artifactory/dpet-repo/"
