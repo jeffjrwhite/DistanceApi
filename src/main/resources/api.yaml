@@ -53,7 +53,9 @@ paths:
       tags: [divisions]
       x-scala-package: divisions
       operationId: getDivisions
-      summary: Returns a list of divisions
+      summary: Returns a list of divisions or a division by id
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
       responses:
         200:
           description: Divisions message
@@ -71,10 +73,20 @@ components:
       schema:
         type: string
 
+    IdParam:
+      name: id
+      in: query
+      description: Id of object to return
+      schema:
+        type: string
+
   schemas:
     DivisionsResponse:
       type: object
       properties:
+        count:
+          type: integer
+          format: int32
         list:
           type: array
           items:
