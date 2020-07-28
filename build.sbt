@@ -8,7 +8,7 @@ lazy val root = (project in file("."))
   .settings(
     organization := "com.ynap",
     name := "dpetapi",
-    version := "1.0.0",
+    version := "1.0.1",
     scalaVersion := "2.12.11",
     libraryDependencies ++= Seq(
       "org.tpolecat"          %% "doobie-core"            % doobieVersion,
@@ -24,8 +24,7 @@ lazy val root = (project in file("."))
       "io.circe"        %% "circe-generic"       % CirceVersion,
       "io.circe"        %% "circe-java8"         % CirceVersion,
       "org.specs2"      %% "specs2-core"         % Specs2Version % "test",
-      "ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
-      "net.liftweb" %% "lift-json" % "3.3.0"
+      "ch.qos.logback"  %  "logback-classic"     % LogbackVersion
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
     addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.0")

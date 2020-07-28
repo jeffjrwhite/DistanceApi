@@ -14,15 +14,17 @@ import io.circe.syntax._
 class DivisionsHandlerImpl[F[_] : Applicative](xa: Transactor[IO]) extends DivisionsHandler[F] {
 
   implicit val encodeFieldType: Encoder[Division] =
-    Encoder.forProduct2("id", "name")(Division.unapply(_).get)
+    Encoder.forProduct4("id", "name", "shortname", "active")(Division.unapply(_).get)
 
   override def getDivisions(respond: GetDivisionsResponse.type)(
-    id: Option[String] = None,
-    name: Option[String] = None
+    id: Option[Int],
+    name: Option[String],
+    pageNumber: Option[Int],
+    pageSize: Option[Int]
   ): F[GetDivisionsResponse] = {
 
     var jsonList: List[io.circe.Json] = for {
-      division <- DivisionQuery.search(id, name).to[List].transact(xa).unsafeRunSync
+      division <- DivisionQuery.search(id, name, pageNumber, pageSize).to[List].transact(xa).unsafeRunSync
     } yield {
       division.asJson
     }

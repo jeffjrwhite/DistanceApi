@@ -41,6 +41,8 @@ paths:
       parameters:
         - $ref: '#/components/parameters/IdParam'
         - $ref: '#/components/parameters/NameParam'
+        - $ref: '#/components/parameters/PageNumberParam'
+        - $ref: '#/components/parameters/PageSizeParam'
       responses:
         200:
           description: Divisions message
@@ -48,6 +50,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DivisionsResponse'
+        404:
+          description: No Divisions Found
 
 components:
   parameters:
@@ -57,13 +61,32 @@ components:
       description: Name of object
       schema:
         type: string
-
     IdParam:
       name: id
       in: query
       description: Id of object to return
       schema:
-        type: string
+        type: integer
+        format: int32
+    PageNumberParam:
+      name: pageNumber
+      in: query
+      description: Page Number
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        default: 1
+    PageSizeParam:
+      name: pageSize
+      in: query
+      description: Page Size
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 500
+        default: 25
 
   schemas:
     DivisionsResponse:
@@ -81,6 +104,10 @@ components:
                 type: string
               name:
                 type: string
+              shortname:
+                type: string
+              active:
+                type: boolean
 
     ExampleResponse:
       type: object

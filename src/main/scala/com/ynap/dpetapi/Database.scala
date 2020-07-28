@@ -22,8 +22,4 @@ object Database {
       IO.pure(HikariTransactor.apply[IO](new HikariDataSource(config)))
     transactor
   }
-
-//  def bootstrap(xa: Transactor[IO]): IO[Int] = {
-    //AccountQuery.createTable.run.transact(xa)
-//  }
 }
