@@ -3,10 +3,8 @@ package com.ynap.dpetapi
 import cats.effect.IO
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import doobie.hikari.HikariTransactor
-import doobie.implicits._
-import doobie.util.transactor.Transactor
 
-object Database {
+class Database() {
 
   def transactor(dbConfig: DbConfig): IO[HikariTransactor[IO]] = {
     // hikari config
@@ -16,6 +14,9 @@ object Database {
     config.setPassword(dbConfig.password)
     config.setDriverClassName(dbConfig.driver)
     config.setMaximumPoolSize(dbConfig.poolSize)
+    config.setConnectionTimeout(dbConfig.connectionTimeout)
+    config.setMaxLifetime(100000)
+    config.setValidationTimeout(100000)
 
     // transactor with config
     val transactor: IO[HikariTransactor[IO]] =

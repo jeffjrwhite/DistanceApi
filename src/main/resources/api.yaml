@@ -53,6 +53,27 @@ paths:
         404:
           description: No Divisions Found
 
+  /wms/inventory:
+    get:
+      tags: [inventory]
+      x-scala-package: inventory
+      operationId: getWmsInventory
+      summary: Returns a list of inventory or a inventory by gtin
+      parameters:
+        - $ref: '#/components/parameters/GtinParam'
+        - $ref: '#/components/parameters/NameParam'
+        - $ref: '#/components/parameters/PageNumberParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        200:
+          description: Inventory message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryResponse'
+        404:
+          description: No Inventory Found
+
 components:
   parameters:
     NameParam:
@@ -68,6 +89,18 @@ components:
       schema:
         type: integer
         format: int32
+    DivisionParam:
+      name: division
+      in: query
+      description: Name of division
+      schema:
+        type: string
+    GtinParam:
+      name: gtin
+      in: query
+      description: GTIN of object to return
+      schema:
+        type: string
     PageNumberParam:
       name: pageNumber
       in: query
@@ -108,6 +141,25 @@ components:
                 type: string
               active:
                 type: boolean
+
+    InventoryResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        warehouse:
+          type: string
+        inventory:
+          type: array
+          items:
+            type: object
+            properties:
+              gtin:
+                type: string
+              supply:
+                type: integer
+                format: int32
 
     ExampleResponse:
       type: object

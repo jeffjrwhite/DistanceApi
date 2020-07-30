@@ -28,14 +28,16 @@ object DivisionQuery {
        """.stripMargin
           .query[Division]
       case (None, None, Some(pageNum), Some(pageSiz)) =>
+        val from = (pageNum -1) * pageSiz
+        val to = from + pageSiz
         sql"""
                |SELECT ID_Divisione as id, Descrizione as name, ShortName, Attivo as active
                |    FROM (
                |    SELECT ID_Divisione, Descrizione, ShortName, Attivo,
                |        ROW_NUMBER() OVER (ORDER BY ID_Divisione, Descrizione, ShortName) AS RowNumber
                |        FROM Divisione) Divisione
-               |    WHERE RowNumber > (${pageNumber.get}-1)*${pageSize.get}
-               |        AND RowNumber <= ${pageNumber.get}*${pageSize.get}
+               |    WHERE RowNumber > $from
+               |        AND RowNumber <= $to
                |    ORDER BY 1
        """.stripMargin
           .query[Division]
