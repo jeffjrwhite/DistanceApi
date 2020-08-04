@@ -22,13 +22,13 @@ class InventoryHandlerImpl[F[_] : Applicative]() extends InventoryHandler[F] {
     Encoder.forProduct2("gtin", "supply")(Inventory.unapply(_).get)
 
   override def getWmsInventory(respond: GetWmsInventoryResponse.type)(
-    gtin: Option[String],
+    gtin: Iterable[String],
     warehouse: Option[String],
     pageNumber: Option[Int],
     pageSize: Option[Int]
   ): F[GetWmsInventoryResponse] = {
 
-    val query = """
+    val query = s"""
                   |         SELECT gtin, COUNT(CodiceMatricola) AS supply
                   |         FROM vw_GTINArticleBinding gab WITH (NOLOCK)
                   |         INNER JOIN RepArticolo ra WITH (NOLOCK) ON ra.Codice = gab.Code10
@@ -40,12 +40,13 @@ class InventoryHandlerImpl[F[_] : Applicative]() extends InventoryHandler[F] {
                   |         		ON rg.reparticolo_id = ra.reparticolo_parent_id
                   |         		  AND rg.MF_ID = m.Mag1_ID
                   |         		  AND rg.OrdineTaglia = m.OrdineTaglia
-                  |         WHERE gtin IN ('${gtinList}')
-                  |         AND lh.code = '$warehouseCode'
+                  |         WHERE gtin IN (${gtin.mkString("'","','","'")})
+                  |         AND lh.code = '${warehouse.get}'
                   |         AND m.stato IN (23)
                   |           GROUP BY gtin, m.OrdineTaglia
                   |          ORDER BY 1
        """.stripMargin
+    println(s"query : $query")
     var res = for {
       client <- DatabaseClient.getClient(Databases.Fashion)
       result <- client.run(query, DatabaseClient.getJsonList)

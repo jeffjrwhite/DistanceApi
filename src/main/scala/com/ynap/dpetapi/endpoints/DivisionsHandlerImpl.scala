@@ -24,11 +24,39 @@ class DivisionsHandlerImpl[F[_] : Applicative]() extends DivisionsHandler[F] {
     pageSize: Option[Int]
   ): F[GetDivisionsResponse] = {
 
-    val query =
-      """SELECT ID_Divisione as id, Descrizione as name, ShortName, Attivo as active
-                       FROM Divisione
-                         ORDER BY 1
+    val query = (id, name, pageNumber, pageSize) match {
+      case (Some(divId), _, _, _) =>
+        s"""
+             |SELECT ID_Divisione as id, Descrizione as name, ShortName, Attivo as active FROM Divisione
+             |WHERE ID_Divisione = ${divId}
+             |    ORDER BY 1
        """.stripMargin
+      case (None, Some(namePattern), _, _) =>
+        s"""
+             |SELECT ID_Divisione as id, Descrizione as name, ShortName, Attivo as active FROM Divisione
+             |WHERE Descrizione like '${namePattern}'
+             |    ORDER BY 1
+       """.stripMargin
+      case (None, None, Some(pageNum), Some(pageSiz)) =>
+        val from = (pageNum - 1) * pageSiz
+        val to = from + pageSiz
+        s"""
+             |SELECT ID_Divisione as id, Descrizione as name, ShortName, Attivo as active
+             |    FROM (
+             |    SELECT ID_Divisione, Descrizione, ShortName, Attivo,
+             |        ROW_NUMBER() OVER (ORDER BY ID_Divisione, Descrizione, ShortName) AS RowNumber
+             |        FROM Divisione) Divisione
+             |    WHERE RowNumber > $from
+             |        AND RowNumber <= $to
+             |    ORDER BY 1
+       """.stripMargin
+      case (None, None, _, _) =>
+        s"""
+           |    SELECT ID_Divisione as id, Descrizione as name, ShortName, Attivo as active
+           |        FROM Divisione
+           |    ORDER BY 1
+       """.stripMargin
+    }
     var res = for {
       client <- DatabaseClient.getClient(Databases.Fashion)
       result <- client.run(query, DatabaseClient.getJsonList)

@@ -61,7 +61,7 @@ paths:
       summary: Returns a list of inventory or a inventory by gtin
       parameters:
         - $ref: '#/components/parameters/GtinParam'
-        - $ref: '#/components/parameters/NameParam'
+        - $ref: '#/components/parameters/WarehouseParam'
         - $ref: '#/components/parameters/PageNumberParam'
         - $ref: '#/components/parameters/PageSizeParam'
       responses:
@@ -76,6 +76,7 @@ paths:
 
 components:
   parameters:
+
     NameParam:
       name: name
       in: query
@@ -89,18 +90,41 @@ components:
       schema:
         type: integer
         format: int32
-    DivisionParam:
-      name: division
+
+    WarehouseParam:
+      name: warehouse
       in: query
-      description: Name of division
+      description: Code for warehouse, e.g. IT-BO-BSL
       schema:
         type: string
+        enum: [IT-BO-BSL, US-NJ-PLG, GB-LN-DC1, US-NJ-DC2, IT-MI-DC4, JP-YOK-YAMATO, HK-TM-LIFESTYLE, CN-SH-LIFESTYLE, UAE-DU-LIBERTY]
+      examples:
+        -sample1:
+          value:
+            name: IT-BO-BSL
+        -sample2:
+          value:
+            name: GB-LN-DC1
+
     GtinParam:
       name: gtin
       in: query
-      description: GTIN of object to return
+      description: One or more GTINs
+      required: true
       schema:
-        type: string
+        type: array
+        items:
+          type: string
+          pattern: '^\d{14}$'
+        uniqueItems: true
+      examples:
+        oneGTINs:
+          summary: Example of a single GTIN
+          value: ["04005009669892"]   # ?gtin=04005009669892
+        multipleGTINs:
+          summary: Example of multiple GTINs
+          value: ["0400500966989","0400463499234","0400504063233"]   # ?gtin=0400463499234&gtin=0400463499234&gtin=0400504063233
+
     PageNumberParam:
       name: pageNumber
       in: query
@@ -110,6 +134,7 @@ components:
         format: int32
         minimum: 1
         default: 1
+
     PageSizeParam:
       name: pageSize
       in: query
@@ -122,6 +147,7 @@ components:
         default: 25
 
   schemas:
+
     DivisionsResponse:
       type: object
       properties:
