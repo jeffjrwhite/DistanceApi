@@ -41,6 +41,8 @@ paths:
       parameters:
         - $ref: '#/components/parameters/IdParam'
         - $ref: '#/components/parameters/NameParam'
+        - $ref: '#/components/parameters/PageNumberParam'
+        - $ref: '#/components/parameters/PageSizeParam'
       responses:
         200:
           description: Divisions message
@@ -48,6 +50,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DivisionsResponse'
+        404:
+          description: No Divisions Found
+
+  /wms/inventory:
+    get:
+      tags: [inventory]
+      x-scala-package: inventory
+      operationId: getWmsInventory
+      summary: Returns a list of inventory or a inventory by gtin
+      parameters:
+        - $ref: '#/components/parameters/GtinParam'
+        - $ref: '#/components/parameters/NameParam'
+        - $ref: '#/components/parameters/PageNumberParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        200:
+          description: Inventory message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryResponse'
+        404:
+          description: No Inventory Found
 
 components:
   parameters:
@@ -57,13 +82,44 @@ components:
       description: Name of object
       schema:
         type: string
-
     IdParam:
       name: id
       in: query
       description: Id of object to return
       schema:
+        type: integer
+        format: int32
+    DivisionParam:
+      name: division
+      in: query
+      description: Name of division
+      schema:
         type: string
+    GtinParam:
+      name: gtin
+      in: query
+      description: GTIN of object to return
+      schema:
+        type: string
+    PageNumberParam:
+      name: pageNumber
+      in: query
+      description: Page Number
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        default: 1
+    PageSizeParam:
+      name: pageSize
+      in: query
+      description: Page Size
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 500
+        default: 25
 
   schemas:
     DivisionsResponse:
@@ -81,6 +137,29 @@ components:
                 type: string
               name:
                 type: string
+              shortname:
+                type: string
+              active:
+                type: boolean
+
+    InventoryResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        warehouse:
+          type: string
+        inventory:
+          type: array
+          items:
+            type: object
+            properties:
+              gtin:
+                type: string
+              supply:
+                type: integer
+                format: int32
 
     ExampleResponse:
       type: object
