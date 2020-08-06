@@ -7,7 +7,7 @@ lazy val root = (project in file("."))
   .settings(
     organization := "com.ynap",
     name := "dpetapi",
-    version := "1.0.2",
+    version := "1.0.3",
     scalaVersion := "2.12.11",
     libraryDependencies ++= Seq(
       "com.typesafe" % "config" % "1.2.1",

@@ -27,6 +27,100 @@ object DatabaseClient {  object Databases extends Enumeration {
   = Value
 }
 
+  def getDbClient(siteCode: String): Try[DatabaseClient] = {
+    siteCode match {
+      case "VALENTINO" =>
+        Try(new DatabaseClient(
+          AppConfig.getConfigOrElseDefault("val.web-commerce-database.url", "jdbc:oracle:thin:@rds.wcs01.int4.ewe1.aws.dev.e-comm:1521:yaiwcs40"),
+          AppConfig.getConfigOrElseDefault("val.web-commerce-database.driver", "oracle.jdbc.driver.OracleDriver"),
+          AppConfig.getConfigOrElseDefault("val.web-commerce-database.user", "WCINT04_YNPTST_RO"), //VALENTINO WCS
+          AppConfig.getConfigOrElseDefault("val.web-commerce-database.password", "gT3Ushj3dk") //VALENTINO WCS
+        ))
+      case "VALENTINO_UAT" =>
+        Try(new DatabaseClient(
+          AppConfig.getConfigOrElseDefault("val.web-commerce-database.url", "jdbc:oracle:thin:@yaiwcs40.clvlinlaa9nh.eu-west-1.rds.amazonaws.com:1521:yaiwcs40"),
+          AppConfig.getConfigOrElseDefault("val.web-commerce-database.driver", "oracle.jdbc.driver.OracleDriver"),
+          AppConfig.getConfigOrElseDefault("val.web-commerce-database.user", "WCUAT04_DATAPROV_RO"), //VALENTINO WCS
+          AppConfig.getConfigOrElseDefault("val.web-commerce-database.password", "L3nu9uIwSR") //VALENTINO WCS
+        ))
+      case "MONCLER_UAT" =>
+        Try(new DatabaseClient(
+          AppConfig.getConfigOrElseDefault("monuat.web-commerce-database.url", "jdbc:oracle:thin:@yauwcs01.cyom9nicjzk0.eu-west-1.rds.amazonaws.com:1521:yauwcs01"),
+          AppConfig.getConfigOrElseDefault("monuat.web-commerce-database.driver", "oracle.jdbc.driver.OracleDriver"),
+          AppConfig.getConfigOrElseDefault("monuat.web-commerce-database.user", "WCUAT01_FUNTST_RO"),
+          AppConfig.getConfigOrElseDefault("monuat.web-commerce-database.password", "xhRbYi_jbK")
+        ))
+      case "FERRARI_UAT" =>
+        Try(new DatabaseClient(
+          AppConfig.getConfigOrElseDefault("feruat.web-commerce-database.url", "jdbc:oracle:thin:@yauwcs01.cyom9nicjzk0.eu-west-1.rds.amazonaws.com:1521:yauwcs01"),
+          AppConfig.getConfigOrElseDefault("feruat.web-commerce-database.driver", "oracle.jdbc.driver.OracleDriver"),
+          AppConfig.getConfigOrElseDefault("feruat.web-commerce-database.user", "WCUAT01_FUNTST_RO"), //FERRARI WCS
+          AppConfig.getConfigOrElseDefault("feruat.web-commerce-database.password", "xhRbYi_jbK") //FERRARI WCS
+        ))
+      case "MONCLER" =>
+        Try(new DatabaseClient(
+          AppConfig.getConfigOrElseDefault("mon.web-commerce-database.url", "jdbc:oracle:thin:@yaiwcs01.cyom9nicjzk0.eu-west-1.rds.amazonaws.com:1521:yaiwcs01"),
+          AppConfig.getConfigOrElseDefault("mon.web-commerce-database.driver", "oracle.jdbc.driver.OracleDriver"),
+          AppConfig.getConfigOrElseDefault("mon.web-commerce-database.user", "WCINT01_FUNTST_RO"),
+          AppConfig.getConfigOrElseDefault("mon.web-commerce-database.password", "J19wgUwj917IWp")
+        ))
+      case "FERRARI" =>
+        Try(new DatabaseClient(
+          AppConfig.getConfigOrElseDefault("fer.web-commerce-database.url", "jdbc:oracle:thin:@yaiwcs01.cyom9nicjzk0.eu-west-1.rds.amazonaws.com:1521:yaiwcs01"),
+          AppConfig.getConfigOrElseDefault("fer.web-commerce-database.driver", "oracle.jdbc.driver.OracleDriver"),
+          AppConfig.getConfigOrElseDefault("fer.web-commerce-database.user", "WCINT01_FUNTST_RO"), //FERRARI WCS
+          AppConfig.getConfigOrElseDefault("fer.web-commerce-database.password", "J19wgUwj917IWp") //FERRARI WCS
+        ))
+      case "THEOUTNET" =>
+        Try(new DatabaseClient(
+          AppConfig.getConfigOrElseDefault("ton.web-commerce-database.url", "jdbc:oracle:thin:@rds.wcs01.int3.ewe1.aws.yoox.net:1521:yaiwcs30"), //TON
+          AppConfig.getConfigOrElseDefault("ton.web-commerce-database.driver", "oracle.jdbc.driver.OracleDriver"),
+          AppConfig.getConfigOrElseDefault("ton.web-commerce-database.user", "WCINT03_FUNTST_RO"), //TON
+          AppConfig.getConfigOrElseDefault("ton.web-commerce-database.password", "MmHFi95BCi") //TON
+        ))
+      case "MRPORTER" | "MRP" =>
+        Try(new DatabaseClient(
+          AppConfig.getConfigOrElseDefault("mrp.web-commerce-database.url", "jdbc:oracle:thin:@yaiwcs50.cb5nsacp180c.eu-west-1.rds.amazonaws.com:1521:yaiwcs50"),
+          AppConfig.getConfigOrElseDefault("mrp.web-commerce-database.driver", "oracle.jdbc.driver.OracleDriver"),
+          AppConfig.getConfigOrElseDefault("mrp.web-commerce-database.user", "WCINT05_E2EAUT_RO"),
+          AppConfig.getConfigOrElseDefault("mrp.web-commerce-database.password", "pianoD7Qux")
+        ))
+      case "NETAPORTER" | "NAP" =>
+        Try(new DatabaseClient(
+          AppConfig.getConfigOrElseDefault("nap.web-commerce-database.url", "jdbc:oracle:thin:@napwi01l.cj0kr05midza.eu-west-1.rds.amazonaws.com:1521:napwi01l"),
+          AppConfig.getConfigOrElseDefault("nap.web-commerce-database.driver", "oracle.jdbc.driver.OracleDriver"),
+          AppConfig.getConfigOrElseDefault("nap.web-commerce-database.user", "WCINT08_FUNTST_STG_RO"),
+          AppConfig.getConfigOrElseDefault("nap.web-commerce-database.password", "Bu_pwgqvXB")
+        ))
+      case _ =>
+        Failure(new RuntimeException(s"No WCS Oracle database defined for [$siteCode]"))
+    }
+  }
+  def getSchemaOwner(siteCode: String):String = {
+    siteCode match {
+      case "VALENTINO_UAT" =>
+        AppConfig.getConfigOrElseDefault("vdi.web-commerce-database.schemaowner", "wcuat04_owner")
+      case "VALENTINO" =>
+        AppConfig.getConfigOrElseDefault("vdi.web-commerce-database.schemaowner", "wcint04_owner")
+      case "MONCLER" =>
+        AppConfig.getConfigOrElseDefault("mon.web-commerce-database.schemaowner", "wcint01_owner")
+      case "FERRARI" =>
+        AppConfig.getConfigOrElseDefault("fer.web-commerce-database.schemaowner", "wcint01_owner")
+      case "MONCLER_UAT" =>
+        AppConfig.getConfigOrElseDefault("mon.web-commerce-database.schemaowner", "wcuat01_owner")
+      case "FERRARI_UAT" =>
+        AppConfig.getConfigOrElseDefault("fer.web-commerce-database.schemaowner", "wcuat01_owner")
+      case "THEOUTNET" =>
+        AppConfig.getConfigOrElseDefault("ton.web-commerce-database.schemaowner", "wcint03_owner")
+      case "MRPORTER" | "MRP" =>
+        AppConfig.getConfigOrElseDefault("mrp.web-commerce-database.schemaowner", "wcint05_owner")
+      case "NETAPORTER" | "NAP" =>
+        AppConfig.getConfigOrElseDefault("nap.web-commerce-database.schemaowner", "wcint08_stg_owner")
+      case _ =>
+        "UNKNOWN"
+    }
+  }
+
   /**
    * Implicit classes and imports used for JSON "pretty" printing
    */
@@ -168,9 +262,24 @@ object DatabaseClient {  object Databases extends Enumeration {
     Try {
       val md = rs.getMetaData
       val colNames = for (i <- 1 to md.getColumnCount) yield md.getColumnName(i)
-      val buildMap = () => parse(prettyRender(decompose((for (n <- colNames) yield n -> rs.getObject(n)).toMap))) match {
-        case Left(failure) => throw new RuntimeException(s"Invalid JSON : ${failure.message}")
-        case Right(json) => json
+      val buildMap = () => parse(prettyRender(decompose((for (n <- colNames) yield n -> rs.getObject(n) match {
+        case (str: String, s: String) =>
+          (str, s)
+        case (str: String, i: Integer) =>
+          (str, i)
+        case (str: String, n: Number) if n.getClass.getName == "java.math.BigDecimal" =>
+          // Needed to convert Oracle BigDecimal (INT) values to integer.
+          (str, n.toString.toInt)
+        case (str: String, b: Object) =>
+          // Boolean
+          (str, b)
+        case (str: String, any) =>
+          (str, any)
+      }).toMap))) match {
+        case Left(failure) =>
+          throw new RuntimeException(s"Invalid JSON : ${failure.message}")
+        case Right(json) =>
+          json
       }
       Iterator.continually(rs.next()).takeWhile(identity).map(_ => buildMap()).toIndexedSeq
     }
@@ -535,7 +644,7 @@ class DatabaseClient(
           config.setPassword(password)
           config.setDriverClassName(driver)
           config.setMaximumPoolSize(20)
-          config.setPoolName("DPETAPI")
+          config.setPoolName(s"DPETAPI-$driver")
           config.setMinimumIdle(2)
 //          config.setConnectionTimeout(50000)
           val hconn = new HikariDataSource(config).getConnection
@@ -560,7 +669,7 @@ class DatabaseClient(
           config.setPassword(password)
           config.setDriverClassName(driver)
           config.setMaximumPoolSize(20)
-          config.setPoolName("DPETAPI")
+          config.setPoolName(s"DPETAPI-$driver")
           config.setMinimumIdle(2)
 //          config.setConnectionTimeout(50000)
           val hconn = new HikariDataSource(config).getConnection
