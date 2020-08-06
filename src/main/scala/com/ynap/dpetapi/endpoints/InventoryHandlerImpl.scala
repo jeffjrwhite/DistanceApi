@@ -1,25 +1,16 @@
 package com.ynap.dpetapi.endpoints
 
 import cats.Applicative
-import cats.effect.IO
 import cats.implicits._
-import com.ynap.dpetapi._
 import com.ynap.dpetapi.database.DatabaseClient
 import com.ynap.dpetapi.database.DatabaseClient.Databases
-import com.ynap.dpetapi.endpoints.definitions.{DivisionsResponse, InventoryResponse}
-import com.ynap.dpetapi.endpoints.divisions.{DivisionsHandler, GetDivisionsResponse}
+import com.ynap.dpetapi.endpoints.definitions.InventoryResponse
 import com.ynap.dpetapi.endpoints.inventory.{GetWmsInventoryResponse, InventoryHandler}
-import io.circe.Encoder
-import io.circe.syntax._
-
 import scala.util.{Failure, Success}
 
 case class Inventory(gtin: String, supply: Int)
 
 class InventoryHandlerImpl[F[_] : Applicative]() extends InventoryHandler[F] {
-
-  implicit val encodeFieldType: Encoder[Inventory] =
-    Encoder.forProduct2("gtin", "supply")(Inventory.unapply(_).get)
 
   override def getWmsInventory(respond: GetWmsInventoryResponse.type)(
     gtin: Iterable[String],
@@ -46,27 +37,19 @@ class InventoryHandlerImpl[F[_] : Applicative]() extends InventoryHandler[F] {
                   |           GROUP BY gtin, m.OrdineTaglia
                   |          ORDER BY 1
        """.stripMargin
-    println(s"query : $query")
     var res = for {
       client <- DatabaseClient.getClient(Databases.Fashion)
       result <- client.run(query, DatabaseClient.getJsonList)
     } yield
       result
-    val jsonList:List[String] = res match {
+    res match {
       case Failure(ex) => throw ex
       case Success(rs) =>
-        rs
+        for {
+          inventory <- Some(rs).pure[F]
+        } yield
+          respond.Ok(InventoryResponse(Some(rs.length), warehouse, inventory))
     }
-    var json: List[io.circe.Json] = for {
-      division <- jsonList
-    } yield {
-      division.asJson
-    }
-    for {
-      inventory <- Some(json.toIndexedSeq).pure[F]
-    } yield
-      respond.Ok(InventoryResponse(Some(json.length), warehouse, inventory))
-
   }
 
 }
