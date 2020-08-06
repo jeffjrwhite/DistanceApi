@@ -3,9 +3,10 @@ package com.ynap.dpetapi
 import cats.effect.{ConcurrentEffect, ContextShift, Timer}
 import cats.implicits._
 import com.ynap.dpetapi.endpoints.divisions.DivisionsResource
-import com.ynap.dpetapi.endpoints.{DivisionsHandlerImpl, ExampleHandlerImpl, InventoryHandlerImpl}
+import com.ynap.dpetapi.endpoints.{DivisionsHandlerImpl, ExampleHandlerImpl, WcsInventoryHandlerImpl, WmsInventoryHandlerImpl}
 import com.ynap.dpetapi.endpoints.example.ExampleResource
-import com.ynap.dpetapi.endpoints.inventory.InventoryResource
+import com.ynap.dpetapi.endpoints.wmsInventory.WmsInventoryResource
+import com.ynap.dpetapi.endpoints.wcsInventory.WcsInventoryResource
 import fs2.Stream
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.implicits._
@@ -27,7 +28,8 @@ object DpetapiServer {
         // Add all route handler implementations here
           new ExampleResource().routes(new ExampleHandlerImpl())
             <+> new DivisionsResource().routes(new DivisionsHandlerImpl())
-            <+> new InventoryResource().routes(new InventoryHandlerImpl())
+            <+> new WmsInventoryResource().routes(new WmsInventoryHandlerImpl())
+            <+> new WcsInventoryResource().routes(new WcsInventoryHandlerImpl())
         // ------------------------------------------
         ).orNotFound
 

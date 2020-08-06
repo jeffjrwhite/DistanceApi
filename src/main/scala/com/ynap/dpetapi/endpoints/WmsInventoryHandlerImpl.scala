@@ -5,16 +5,15 @@ import cats.implicits._
 import com.ynap.dpetapi.database.DatabaseClient
 import com.ynap.dpetapi.database.DatabaseClient.Databases
 import com.ynap.dpetapi.endpoints.definitions.InventoryResponse
-import com.ynap.dpetapi.endpoints.inventory.{GetWmsInventoryResponse, InventoryHandler}
+import com.ynap.dpetapi.endpoints.wmsInventory.{GetWmsInventoryResponse, WmsInventoryHandler}
 import scala.util.{Failure, Success}
 
-case class Inventory(gtin: String, supply: Int)
-
-class InventoryHandlerImpl[F[_] : Applicative]() extends InventoryHandler[F] {
+class WmsInventoryHandlerImpl[F[_] : Applicative]() extends WmsInventoryHandler[F] {
 
   override def getWmsInventory(respond: GetWmsInventoryResponse.type)(
     gtin: Iterable[String],
-    warehouse: Option[String],
+    warehouse: String,
+    division: String,
     pageNumber: Option[Int],
     pageSize: Option[Int]
   ): F[GetWmsInventoryResponse] = {
@@ -25,6 +24,7 @@ class InventoryHandlerImpl[F[_] : Applicative]() extends InventoryHandler[F] {
                   |         INNER JOIN RepArticolo ra WITH (NOLOCK) ON ra.Codice = gab.Code10
                   |         INNER JOIN Matricole m WITH (NOLOCK) ON ra.ID_RepArticolo = m.Articolo_ID AND gab.SizeOrder = m.OrdineTaglia
                   |         INNER JOIN magazzinifisici mf WITH (NOLOCK) ON  mf.ID_MagazziniFisici = m.Mag2_ID
+                  |         INNER JOIN Fashion.dbo.Divisione d ON ra.Divisione_ID = d.ID_Divisione
                   |         INNER JOIN Fornitori fo WITH (NOLOCK) ON fo.ID_Fornitori = m.Fornitori_ID
                   |         INNER JOIN LogisticHub lh WITH (NOLOCK) ON mf.LogisticHub_ID = lh.ID_LogisticHub
                   |         INNER JOIN Repgiacenze AS rg (NOLOCK)
@@ -32,7 +32,9 @@ class InventoryHandlerImpl[F[_] : Applicative]() extends InventoryHandler[F] {
                   |         		  AND rg.MF_ID = m.Mag1_ID
                   |         		  AND rg.OrdineTaglia = m.OrdineTaglia
                   |         WHERE gtin IN (${gtin.mkString("'","','","'")})
-                  |         AND lh.code = '${warehouse.get}'
+                  |         AND lh.code = '${warehouse}'
+                  |         AND d.Descrizione IN ('${division}')
+                  |         AND m.Mag1_ID = m.Mag2_ID
                   |         AND m.stato IN (23)
                   |           GROUP BY gtin, m.OrdineTaglia
                   |          ORDER BY 1
@@ -48,7 +50,7 @@ class InventoryHandlerImpl[F[_] : Applicative]() extends InventoryHandler[F] {
         for {
           inventory <- Some(rs).pure[F]
         } yield
-          respond.Ok(InventoryResponse(Some(rs.length), warehouse, inventory))
+          respond.Ok(InventoryResponse(Some(rs.length), Some(division), Some(warehouse), inventory))
     }
   }
 
