@@ -7,7 +7,6 @@ import com.ynap.dpetapi.AppConfig
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import javax.sql.rowset.CachedRowSet
 import oracle.xdb.XMLType
-
 import scala.annotation.tailrec
 import scala.util.{Failure, Try}
 import scala.xml.{Node, XML}
@@ -164,12 +163,16 @@ object DatabaseClient {  object Databases extends Enumeration {
    * @param rs ResultSet
    * @return List of JSON objects
    */
-  def getJsonList(rs: ResultSet): Try[List[String]] = {
+  def getJsonList(rs: ResultSet): Try[IndexedSeq[io.circe.Json]] = {
+    import io.circe.parser._
     Try {
       val md = rs.getMetaData
       val colNames = for (i <- 1 to md.getColumnCount) yield md.getColumnName(i)
-      val buildMap = () => prettyRender(decompose((for (n <- colNames) yield n -> rs.getObject(n)).toMap))
-      Iterator.continually(rs.next()).takeWhile(identity).map(_ => buildMap()).toList
+      val buildMap = () => parse(prettyRender(decompose((for (n <- colNames) yield n -> rs.getObject(n)).toMap))) match {
+        case Left(failure) => throw new RuntimeException(s"Invalid JSON : ${failure.message}")
+        case Right(json) => json
+      }
+      Iterator.continually(rs.next()).takeWhile(identity).map(_ => buildMap()).toIndexedSeq
     }
   }
 
@@ -273,10 +276,10 @@ object DatabaseClient {  object Databases extends Enumeration {
    * @param query      SQL query to evaluate
    * @return JSON List of the data
    */
-  def getJsonList(connection: DatabaseClient.Databases.Value, query: String): Try[List[_]] = {
+  def getJsonList(connection: DatabaseClient.Databases.Value, query: String): Try[IndexedSeq[io.circe.Json]] = {
     getJsonList(connection, Seq(query))
   }
-  def getJsonList(connection: DatabaseClient.Databases.Value, query: Seq[String]): Try[List[_]] = {
+  def getJsonList(connection: DatabaseClient.Databases.Value, query: Seq[String]): Try[IndexedSeq[io.circe.Json]] = {
     val res = for {
       client <- DatabaseClient.getClient(connection)
       result <- client.run(query, DatabaseClient.getJsonList)
@@ -356,10 +359,10 @@ object DatabaseClient {  object Databases extends Enumeration {
    * @param query  SQL query to evaluate
    * @return List of JSON objects
    */
-  def getJsonList(client: Try[RepositoryClient[ResultSet]], query: String): Try[List[_]] = {
+  def getJsonList(client: Try[RepositoryClient[ResultSet]], query: String): Try[IndexedSeq[io.circe.Json]] = {
     getJsonList(client, Seq(query))
   }
-  def getJsonList(client: Try[RepositoryClient[ResultSet]], query: Seq[String]): Try[List[_]] = {
+  def getJsonList(client: Try[RepositoryClient[ResultSet]], query: Seq[String]): Try[IndexedSeq[io.circe.Json]] = {
     val res = for {
       client <- client
       result <- client.run(query, DatabaseClient.getJsonList)
