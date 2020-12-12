@@ -1,9 +1,15 @@
 package com.ynap.dpetapi.endpoints
 
+import cats.effect.Sync
+import fs2.concurrent.SignallingRef
+import io.circe.literal._
+import org.http4s.HttpRoutes
+import org.http4s.circe._
+import org.http4s.dsl.Http4sDsl
+import scala.util.Try
+import cats.implicits._
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-
-import scala.util.Try
 
 class SysOpsHandler[F[IO]: Sync](signal: SignallingRef[F, Boolean]) extends Http4sDsl[F] {
   val format = "yyyy-MM-dd'T'HH:mm:ss"

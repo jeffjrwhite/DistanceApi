@@ -4,10 +4,14 @@ import java.sql.{Connection, ResultSet}
 
 import com.sun.rowset.CachedRowSetImpl
 import com.ynap.dpetapi.AppConfig
+import com.zaxxer.hikari.pool.HikariPool
+import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import javax.sql.rowset.CachedRowSet
+import oracle.xdb.XMLType
 
 import scala.annotation.tailrec
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
+import scala.xml.{Node, XML}
 
 /** DatabaseClient companion class containing static "helper" transformation functions
  *
@@ -146,6 +150,9 @@ object DatabaseClient {  object Databases extends Enumeration {
    */
   implicit val formats = net.liftweb.json.DefaultFormats
 
+  import net.liftweb.json.Extraction._
+  import net.liftweb.json.JsonAST._
+
   /**
    * Enumeration of available database configurations
    */
@@ -209,7 +216,8 @@ object DatabaseClient {  object Databases extends Enumeration {
    * @param fieldName Field name to search for
    * @return Contents of JSON data field
    */
-  def parseJsonForField(json: String, fieldName: String): String = {  // Needed for JSON parse() method below
+  def parseJsonForField(json: String, fieldName: String): String = {
+    import net.liftweb.json._  // Needed for JSON parse() method below
     parse(json) match {
       case obj: JObject => obj.values.filter(_._1 == fieldName).map(x => x._2.toString).toList.head
       case _ => "Invalid case matched"
@@ -274,6 +282,7 @@ object DatabaseClient {  object Databases extends Enumeration {
    * @return List of JSON objects
    */
   def getJsonList(rs: ResultSet): Try[IndexedSeq[io.circe.Json]] = {
+    import io.circe.parser._
     Try {
       val md = rs.getMetaData
       val colNames = for (i <- 1 to md.getColumnCount) yield md.getColumnName(i)

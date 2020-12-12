@@ -45,11 +45,11 @@ lazy val DataProvisioningAPI = (project in file("."))
     ).map(_.
       exclude("com.yoox.tesla.dsl.212", "tesla-core_2.12")),
     libraryDependencies ++= Seq(
-      "org.apache.commons" % "commons-text" % "1.6"
-"org.postgresql" % "postgresql" % "42.2.5",
-"com.typesafe.slick" %% "slick" % "3.3.2",
-"com.typesafe.slick" %% "slick-hikaricp" % "3.2.3",
-"com.microsoft.sqlserver" % "mssql-jdbc" % "7.0.0.jre8"
+      "org.apache.commons" % "commons-text" % "1.6",
+      "org.postgresql" % "postgresql" % "42.2.5",
+      "com.typesafe.slick" %% "slick" % "3.3.2",
+      "com.typesafe.slick" %% "slick-hikaricp" % "3.2.3",
+      "com.microsoft.sqlserver" % "mssql-jdbc" % "7.0.0.jre8"
 ),
 addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
 addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.0")

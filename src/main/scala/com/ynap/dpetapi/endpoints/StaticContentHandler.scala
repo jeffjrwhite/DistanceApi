@@ -1,13 +1,18 @@
 package com.ynap.dpetapi.endpoints
 
 import java.util.concurrent.Executors
-
-import org.http4s.{Status => _}
-
-import scala.language.{higherKinds, implicitConversions}
+import cats.data.NonEmptyList
+import cats.effect.{Async, ContextShift}
+import org.http4s.{Status => _, _}
+import scala.language.higherKinds
+import scala.language.implicitConversions
+import org.http4s.dsl.Http4sDsl
 
 class StaticContentHandler[F[_]]()(implicit F: Async[F]) extends Http4sDsl[F] {
 
+  import org.http4s.CacheDirective.`no-cache`
+  import org.http4s._
+  import org.http4s.headers.`Cache-Control`
   import scala.concurrent.ExecutionContext
 
   val blockingEc = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(4))

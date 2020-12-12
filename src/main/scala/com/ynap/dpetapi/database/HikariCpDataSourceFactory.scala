@@ -1,5 +1,8 @@
 package com.ynap.dpetapi.database
 
+import com.zaxxer.hikari.pool.HikariPool
+import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
+
 case class DpetDataSource(
                   connectionString: String,
                   driver: String,
