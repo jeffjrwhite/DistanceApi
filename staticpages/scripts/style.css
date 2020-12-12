@@ -1,0 +1,8 @@
+body{background-color:#f5f5f5}h1{color:#00008b}.container{max-width:720px;text-align:center;margin:0 auto}
+.buttonDiv{
+    background-color: #73AD21;
+    color: #fff;
+    border: 1px solid;
+}
+.copyright{text-align: center;font-size: 20px;}
+.hidden { display: none; }

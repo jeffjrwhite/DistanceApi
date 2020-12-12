@@ -1,0 +1,56 @@
+<!-- HTML for static distribution bundle build -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <head>
+      <title>Data Provisioning API - DPETAPI</title>
+      <meta HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; CHARSET=UTF-8" />
+      <meta http-equiv="Content-Style-Type" content="text/css" />
+      <meta HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+      <meta HTTP-EQUIV="Cache-Control" CONTENT="no-cache" />
+      <meta HTTP-EQUIV="Expires" content="0" />
+      <link rel="stylesheet" href="scripts/style.css" />
+      <link rel="stylesheet" href="scripts/jquery-ui-custom.min.css" />
+      <script language="javaScript" src="scripts/jquery.js"></script>
+      <script language="javaScript" src="scripts/jquery-ui-custom.min.js"></script>
+      <style>
+  #draggable { width: 150px; height: 150px; padding: 0.5em; }
+</style><script>
+  $(function() {$( document ).tooltip();});
+  $(function() {$( "#accordiondiv" ).accordion({heightStyle:'content'});});
+  $(function() {$( "#datepicker" ).datepicker();} );
+  $(function() {$( "#dialog" ).dialog({autoOpen: false});} );
+  $(function() {$( "#dialogbutton" ).click(function() {$( "#dialog" ).dialog( "open" );});
+  $(function() {$( ".draggable" ).draggable();} );
+});
+</script>
+  </head>
+
+  <body>
+    <header>
+      <h1 class="ui-widget header">Welcome to the Data Provisioning API (DPETAPI)</h1>
+    </header>
+    <div>
+      <div class="ui-widget-content ui-corner-all floatLeft">
+        <div style="margin-left: 30px; margin-top: 30px; margin-right: 30px; margin-bottom: 30px;">The DETAPI allows you to access all the DB and Service queries in a safe, secure, centralised and optimised way.</div>
+        <div style="margin-left: 30px; margin-top: 30px; margin-right: 30px; margin-bottom: 30px;">
+          <a href="./swagger-ui"
+             target="_blank">Click here to use Swagger UI to evaluate the API</a></div>
+        <div style="margin-left: 30px; margin-top: 30px; margin-right: 30px; margin-bottom: 30px;">
+          <a href="./api.yaml"
+             target="_blank">Click here to display the OpenAPI schema</a></div>
+        <div style="margin-left: 30px; margin-top: 30px; margin-right: 30px; margin-bottom: 30px;">
+          <a href="./wcs/inventory?division=NETAPORTER&warehouse=IT-MI-DC4&gtin=0400503625227&gtin=0400503625197&gtin=0400503625203&gtin=0400503625210&gtin=0400503625272"
+             target="_blank">Click here to send an example API HTTP request that requests the WCS inventory for some GTINs</a></div>
+        <div style="margin-left: 30px; margin-top: 30px; margin-right: 30px; margin-bottom: 30px;">
+          <a href="./divisions?pageNumber=1&pageSize=25"
+             target="_blank">Click here to send an example API HTTP request that requests a paged list of Divisions</a></div>
+<!--        <div style="margin-left: 30px; margin-top: 30px; margin-right: 30px; margin-bottom: 30px;">-->
+<!--          <a href="./examples.html"-->
+<!--             target="_blank">Click here to view example page of JQueryUI widgets</a></div>      </div>-->
+    </div>
+    <footer>
+      <p class="copyright" >Copyright &copy; DPETAPI 2020</p>
+    </footer>
+  </body>
+</html>

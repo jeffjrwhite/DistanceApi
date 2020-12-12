@@ -4,12 +4,10 @@ import java.sql.{Connection, ResultSet}
 
 import com.sun.rowset.CachedRowSetImpl
 import com.ynap.dpetapi.AppConfig
-import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import javax.sql.rowset.CachedRowSet
-import oracle.xdb.XMLType
+
 import scala.annotation.tailrec
 import scala.util.{Failure, Try}
-import scala.xml.{Node, XML}
 
 /** DatabaseClient companion class containing static "helper" transformation functions
  *
@@ -27,7 +25,7 @@ object DatabaseClient {  object Databases extends Enumeration {
   = Value
 }
 
-  def getDbClient(siteCode: String): Try[DatabaseClient] = {
+  def getOracleDbClient(siteCode: String): Try[DatabaseClient] = {
     siteCode match {
       case "VALENTINO" =>
         Try(new DatabaseClient(
@@ -96,7 +94,8 @@ object DatabaseClient {  object Databases extends Enumeration {
         Failure(new RuntimeException(s"No WCS Oracle database defined for [$siteCode]"))
     }
   }
-  def getSchemaOwner(siteCode: String):String = {
+
+  def getOracleSchemaOwner(siteCode: String):String = {
     siteCode match {
       case "VALENTINO_UAT" =>
         AppConfig.getConfigOrElseDefault("vdi.web-commerce-database.schemaowner", "wcuat04_owner")
@@ -121,13 +120,31 @@ object DatabaseClient {  object Databases extends Enumeration {
     }
   }
 
+  def getPostgreSqlDBConnection(databaseName: String):Try[DatabaseClient] = {
+
+    val conn = databaseName match {
+      case "DC1" =>
+        Try(new DatabaseClient(
+          connectionString = AppConfig.getConfigOrElseDefault("db.dc1.url", "jdbc:postgresql://xtdc1-db-e2etesting.dave.net-a-porter.com:5432/xtracker?user=www"),
+          driver = AppConfig.getConfigOrElseDefault("nap.web-commerce-database.driver", "org.postgresql.Driver"),
+          username = AppConfig.getConfigOrElseDefault("nap.web-commerce-database.user", "www"),
+          password = AppConfig.getConfigOrElseDefault("nap.web-commerce-database.password", "www")))
+      case "DC2" =>
+        Try(new DatabaseClient(
+          connectionString = AppConfig.getConfigOrElseDefault("db.dc2.url", "jdbc:postgresql://xtdc2-db-e2etesting.dave.net-a-porter.com:5432/xtracker_dc2?user=www"),
+          driver = AppConfig.getConfigOrElseDefault("nap.web-commerce-database.driver", "org.postgresql.Driver"),
+          username = AppConfig.getConfigOrElseDefault("nap.web-commerce-database.user", "www"),
+          password = AppConfig.getConfigOrElseDefault("nap.web-commerce-database.password", "www")))
+      case _ =>
+        throw new RuntimeException(s"Custom PostgreSql [$databaseName] not defined")
+    }
+    conn
+  }
+
   /**
    * Implicit classes and imports used for JSON "pretty" printing
    */
   implicit val formats = net.liftweb.json.DefaultFormats
-
-  import net.liftweb.json.Extraction._
-  import net.liftweb.json.JsonAST._
 
   /**
    * Enumeration of available database configurations
@@ -192,8 +209,7 @@ object DatabaseClient {  object Databases extends Enumeration {
    * @param fieldName Field name to search for
    * @return Contents of JSON data field
    */
-  def parseJsonForField(json: String, fieldName: String): String = {
-    import net.liftweb.json._  // Needed for JSON parse() method below
+  def parseJsonForField(json: String, fieldName: String): String = {  // Needed for JSON parse() method below
     parse(json) match {
       case obj: JObject => obj.values.filter(_._1 == fieldName).map(x => x._2.toString).toList.head
       case _ => "Invalid case matched"
@@ -258,21 +274,13 @@ object DatabaseClient {  object Databases extends Enumeration {
    * @return List of JSON objects
    */
   def getJsonList(rs: ResultSet): Try[IndexedSeq[io.circe.Json]] = {
-    import io.circe.parser._
     Try {
       val md = rs.getMetaData
       val colNames = for (i <- 1 to md.getColumnCount) yield md.getColumnName(i)
       val buildMap = () => parse(prettyRender(decompose((for (n <- colNames) yield n -> rs.getObject(n) match {
-        case (str: String, s: String) =>
-          (str, s)
-        case (str: String, i: Integer) =>
-          (str, i)
         case (str: String, n: Number) if n.getClass.getName == "java.math.BigDecimal" =>
           // Needed to convert Oracle BigDecimal (INT) values to integer.
           (str, n.toString.toInt)
-        case (str: String, b: Object) =>
-          // Boolean
-          (str, b)
         case (str: String, any) =>
           (str, any)
       }).toMap))) match {
@@ -525,6 +533,33 @@ object DatabaseClient {  object Databases extends Enumeration {
     } yield result
     res.asInstanceOf[Try[Int]]
   }
+
+  /**
+   * Windows authentication (integratedSecurity = true) requires sqljdbc_auth.dll folder to be present in environment path variable.
+   *
+   * If not the following error occurs:
+   *
+   * Failed to load the sqljdbc_auth.dll cause : no sqljdbc_auth in java.library.path
+   * com.microsoft.sqlserver.jdbc.SQLServerException: This driver is not configured for integrated authentication.
+   * Caused by: java.lang.UnsatisfiedLinkError: no sqljdbc_auth in java.library.path
+   *
+   * The java.library.path is read only once when the JVM starts up. If this property is changed using System.setProperty, it won't make any difference.
+   *
+   * The following method updates the path where sqljdbc_auth.dll exists in project/libs folder just for runtime.
+   */
+  def enableIntegratedSecurity {
+    val currentDirectory = new java.io.File(".").getCanonicalPath
+    val libsDirectory    = s"$currentDirectory\\libs"
+    val usrPathsField    = classOf[ClassLoader].getDeclaredField("usr_paths")
+    usrPathsField.setAccessible(true)
+
+    val paths = usrPathsField.get(null).asInstanceOf[Array[String]]
+
+    if (!paths.contains(libsDirectory)) {
+      usrPathsField.set(null, paths :+ libsDirectory)
+    }
+  }
+
 }
 
 /**
@@ -631,86 +666,21 @@ class DatabaseClient(
    * @return Try of the connection (or failure reason)
    */
   def connect: Try[Connection] = {
-    (connectionString, driver, username, password) match {
-      case ("", _, _, _) => throw new RuntimeException(s"No connection string was found.")
-      case (cs, _, "", "") =>
-        if (cs.split(";").exists(p => p.equalsIgnoreCase("integratedSecurity=true"))) enableIntegratedSecurity
-        Class.forName(driver)
-        println(s"Connection String: $cs")
-        connection = Try {
-          val config = new HikariConfig()
-          config.setJdbcUrl(connectionString)
-          config.setUsername(username)
-          config.setPassword(password)
-          config.setDriverClassName(driver)
-          config.setMaximumPoolSize(20)
-          config.setPoolName(s"DPETAPI-$driver")
-          config.setMinimumIdle(2)
-//          config.setConnectionTimeout(50000)
-          val hconn = new HikariDataSource(config).getConnection
-          println(s"HikariDataSource: $hconn")
-          import com.zaxxer.hikari.pool.HikariPool
-          println("hconn.getMetaData ::" + hconn.getMetaData);
-          println("hconn.getClientInfo ::" + hconn.getClientInfo);
-          println("hconn.getCatalog ::" + hconn.getCatalog);
-          val hikariPool = new HikariPool(config)
-          println("The hikariPool count is ::" + hikariPool.getActiveConnections());
-          hconn
-        }
-        connection
-
-      case (cs, _, u, p) =>
-        Class.forName(driver)
-        println(s"Connection String: $cs")
-        connection = Try {
-          val config = new HikariConfig()
-          config.setJdbcUrl(connectionString)
-          config.setUsername(username)
-          config.setPassword(password)
-          config.setDriverClassName(driver)
-          config.setMaximumPoolSize(20)
-          config.setPoolName(s"DPETAPI-$driver")
-          config.setMinimumIdle(2)
-//          config.setConnectionTimeout(50000)
-          val hconn = new HikariDataSource(config).getConnection
-          println(s"HikariDataSource: $hconn")
-          import com.zaxxer.hikari.pool.HikariPool
-          println("hconn.getMetaData ::" + hconn.getMetaData);
-          println("hconn.getClientInfo ::" + hconn.getClientInfo);
-          println("hconn.getCatalog ::" + hconn.getCatalog);
-          val hikariPool = new HikariPool(config)
-          println("The hikariPool count is ::" + hikariPool.getActiveConnections());
-          hconn
-        }
-        connection
-
+    val ds = HikariCpDataSourceFactory.getDataSource(
+      connectionString,
+      driver,
+      username,
+      password
+    )
+    connection = Try {
+      val hconn = ds.getConnection
+      println(s"Get new HikariDataSource Connection: $hconn")
+      println("hconn.getMetaData ::" + hconn.getMetaData);
+      println("hconn.getClientInfo ::" + hconn.getClientInfo);
+      println("hconn.getCatalog ::" + hconn.getCatalog);
+      hconn
     }
-  }
-
-  /**
-   * Windows authentication (integratedSecurity = true) requires sqljdbc_auth.dll folder to be present in environment path variable.
-   *
-   * If not the following error occurs:
-   *
-   * Failed to load the sqljdbc_auth.dll cause : no sqljdbc_auth in java.library.path
-   * com.microsoft.sqlserver.jdbc.SQLServerException: This driver is not configured for integrated authentication.
-   * Caused by: java.lang.UnsatisfiedLinkError: no sqljdbc_auth in java.library.path
-   *
-   * The java.library.path is read only once when the JVM starts up. If this property is changed using System.setProperty, it won't make any difference.
-   *
-   * The following method updates the path where sqljdbc_auth.dll exists in project/libs folder just for runtime.
-   */
-  def enableIntegratedSecurity {
-    val currentDirectory = new java.io.File(".").getCanonicalPath
-    val libsDirectory    = s"$currentDirectory\\libs"
-    val usrPathsField    = classOf[ClassLoader].getDeclaredField("usr_paths")
-    usrPathsField.setAccessible(true)
-
-    val paths = usrPathsField.get(null).asInstanceOf[Array[String]]
-
-    if (!paths.contains(libsDirectory)) {
-      usrPathsField.set(null, paths :+ libsDirectory)
-    }
+    connection
   }
 
   /**
@@ -719,6 +689,8 @@ class DatabaseClient(
    * @return Try of the disconnection operation (or failure reason)
    */
   def disconnect: Try[Unit] = {
+    // Close connection in Hikari Connection Pool - data source will remain available for new connections
+    println(s"Close HikariCP Connection $connection")
     Try(connection.get.close())
   }
 
@@ -730,6 +702,7 @@ class DatabaseClient(
   def test(query: String): Try[ResultSet] = {
     Try {
       val ps = connection.get.prepareStatement(query)
+      ps.setQueryTimeout(120)
       ps.executeQuery()
     }
   }
@@ -743,6 +716,7 @@ class DatabaseClient(
   def executeQuery(query: String): Try[ResultSet] = {
     Try {
       val st = connection.get.createStatement()
+      st.setQueryTimeout(120)
       st.executeQuery(query)
     }
   }
@@ -756,6 +730,7 @@ class DatabaseClient(
   def executeUpdate(statement: String): Try[Int] = {
     Try {
       val st = connection.get.createStatement()
+      st.setQueryTimeout(120)
       st.executeUpdate(statement)
     }
   }

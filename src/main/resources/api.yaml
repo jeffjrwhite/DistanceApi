@@ -1,9 +1,9 @@
 openapi: "3.0.0"
 info:
-  title: DPET API definition
+  title: DISTANCE API definition
   version: 0.0.1
 tags:
-  - name: dpet
+  - name: dapi
 paths:
   /example/{forename}/surname/{surname}:
     get:
@@ -32,78 +32,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/ExampleResponse'
 
-  /divisions:
-    get:
-      tags: [divisions]
-      x-scala-package: divisions
-      operationId: getDivisions
-      summary: Returns a list of divisions or a division by id
-      parameters:
-        - $ref: '#/components/parameters/IdParam'
-        - $ref: '#/components/parameters/NameParam'
-        - $ref: '#/components/parameters/PageNumberParam'
-        - $ref: '#/components/parameters/PageSizeParam'
-      responses:
-        200:
-          description: Divisions message
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DivisionsResponse'
-        404:
-          description: No Divisions Found
-
-  /wms/inventory:
-    get:
-      tags: [inventory]
-      x-scala-package: wmsInventory
-      operationId: getWmsInventory
-      summary: Returns a list of inventory or a inventory by gtin
-      parameters:
-        - $ref: '#/components/parameters/GtinParam'
-        - $ref: '#/components/parameters/WarehouseParam'
-        - $ref: '#/components/parameters/DivisionParam'
-        - $ref: '#/components/parameters/PageNumberParam'
-        - $ref: '#/components/parameters/PageSizeParam'
-      responses:
-        200:
-          description: Inventory message
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InventoryResponse'
-        404:
-          description: No Inventory Found
-
-  /wcs/inventory:
-    get:
-      tags: [inventory]
-      x-scala-package: wcsInventory
-      operationId: getWcsInventory
-      summary: Returns a list of inventory or a inventory by gtin
-      parameters:
-        - $ref: '#/components/parameters/GtinParam'
-        - $ref: '#/components/parameters/WarehouseParam'
-        - $ref: '#/components/parameters/DivisionParam'
-        - $ref: '#/components/parameters/PageNumberParam'
-        - $ref: '#/components/parameters/PageSizeParam'
-      responses:
-        200:
-          description: Inventory message
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InventoryResponse'
-        404:
-          description: No Inventory Found
-
 components:
-  parameters:
 
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes
+  # 2) Apply the security globally to all operations
+  security:
+    - bearerAuth: []
+
+  parameters:
     IdParam:
       name: id
       in: query
       description: Id of object to return
+      schema:
+        type: integer
+        format: int32
+
+    IdParamOptional:
+      name: id
+      in: query
+      description: Id of object to return
+      required: false
       schema:
         type: integer
         format: int32
@@ -115,112 +68,44 @@ components:
       schema:
         type: string
 
-    DivisionParam:
-      name: division
+    MaxItems:
+      name: maxItems
       in: query
-      description: Name of division
+      description: Maximum items to be returned
       required: true
-      schema:
-        type: string
-
-    WarehouseParam:
-      name: warehouse
-      in: query
-      description: Code for warehouse, e.g. IT-BO-BSL
-      required: true
-      schema:
-        type: string
-        enum: [IT-BO-BSL, US-NJ-PLG, GB-LN-DC1, US-NJ-DC2, IT-MI-DC4, JP-YOK-YAMATO, HK-TM-LIFESTYLE, CN-SH-LIFESTYLE, UAE-DU-LIBERTY]
-      examples:
-        -sample1:
-          value:
-            name: IT-BO-BSL
-        -sample2:
-          value:
-            name: GB-LN-DC1
-
-    GtinParam:
-      name: gtin
-      in: query
-      description: One or more GTINs
-      required: true
-      schema:
-        type: array
-        items:
-          type: string
-          pattern: '^\d{14}$'
-        uniqueItems: true
-      examples:
-        oneGTINs:
-          summary: Example of a single GTIN
-          value: ["04005009669892"]   # ?gtin=04005009669892
-        multipleGTINs:
-          summary: Example of multiple GTINs
-          value: ["0400500966989","0400463499234","0400504063233"]   # ?gtin=0400463499234&gtin=0400463499234&gtin=0400504063233
-
-    PageNumberParam:
-      name: pageNumber
-      in: query
-      description: Page Number
       schema:
         type: integer
         format: int32
-        minimum: 1
-        default: 1
-
-    PageSizeParam:
-      name: pageSize
-      in: query
-      description: Page Size
-      schema:
-        type: integer
-        format: int32
-        minimum: 1
-        maximum: 500
-        default: 25
+        minimum: 100
+        default: 5000
 
   schemas:
 
-    DivisionsResponse:
+    DistancesResponse:
       type: object
       properties:
         count:
           type: integer
           format: int32
-        divisions:
+        distances:
           type: array
           items:
             type: object
             properties:
-              id:
-                type: string
-              name:
-                type: string
-              shortname:
-                type: string
-              active:
-                type: boolean
-
-    InventoryResponse:
-      type: object
-      properties:
-        count:
-          type: integer
-          format: int32
-        division:
-          type: string
-        warehouse:
-          type: string
-        inventory:
-          type: array
-          items:
-            type: object
-            properties:
-              gtin:
-                type: string
-              supply:
+              cities:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    coords:
+                      type: string
+              distance:
                 type: integer
                 format: int32
+              units:
+                type: string
 
     ExampleResponse:
       type: object
