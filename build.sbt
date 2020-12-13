@@ -12,9 +12,9 @@ val doobieVersion = "0.9.0"
 
 lazy val DataProvisioningAPI = (project in file("."))
   .settings(
-    organization := "com.nnone2clever",
+    organization := "com.none2clever",
     name := "distanceapi",
-    version := "1.0.1",
+    version := "1.0.1.001",
     scalaVersion := "2.12.7",
     mainClass in assembly := Some("cucumber.api.cli.Main"),
     libraryDependencies ++= Seq(
@@ -81,7 +81,7 @@ scalacOptions ++= Seq(
 guardrailTasks in Compile := List(
   ScalaServer(
     specPath = (Compile / resourceDirectory).value / "api.yaml",
-    pkg = "com.ynap.dpetapi.endpoints",
+    pkg = "com.none2clever.dapi.endpoints",
     framework = "http4s",
     tracing = false
   )
