@@ -1,4 +1,4 @@
-package com.ynap.dpetapi.endpoints
+package com.none2clever.dapi.endpoints
 
 import cats.effect.Sync
 import fs2.concurrent.SignallingRef

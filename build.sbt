@@ -14,7 +14,7 @@ lazy val DataProvisioningAPI = (project in file("."))
   .settings(
     organization := "com.nnone2clever",
     name := "distanceapi",
-    version := "1.0.0",
+    version := "1.0.1",
     scalaVersion := "2.12.7",
     mainClass in assembly := Some("cucumber.api.cli.Main"),
     libraryDependencies ++= Seq(
@@ -34,6 +34,7 @@ lazy val DataProvisioningAPI = (project in file("."))
       "io.circe"        %% "circe-literal"       % CirceVersion,
       "org.specs2"      %% "specs2-core"         % Specs2Version % "test",
       "ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
       "org.webjars" % "webjars-locator" % "0.34",
       "org.webjars" % "swagger-ui"      % "3.17.3",
       "io.jsonwebtoken" % "jjwt" % "0.9.1",

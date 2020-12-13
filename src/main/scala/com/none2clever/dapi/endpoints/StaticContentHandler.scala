@@ -1,4 +1,4 @@
-package com.ynap.dpetapi.endpoints
+package com.none2clever.dapi.endpoints
 
 import java.util.concurrent.Executors
 import cats.data.NonEmptyList

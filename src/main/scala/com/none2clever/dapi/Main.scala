@@ -1,4 +1,4 @@
-package com.ynap.dpetapi
+package com.none2clever.dapi
 
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits._

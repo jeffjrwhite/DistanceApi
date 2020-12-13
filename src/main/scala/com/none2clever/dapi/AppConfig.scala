@@ -1,4 +1,4 @@
-package com.ynap.dpetapi
+package com.none2clever.dapi
 
 import ch.qos.logback.classic.{Level, Logger}
 import com.typesafe.config.{Config, ConfigException, ConfigFactory, ConfigRenderOptions}

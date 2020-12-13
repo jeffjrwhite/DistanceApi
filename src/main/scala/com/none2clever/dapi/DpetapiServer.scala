@@ -1,10 +1,10 @@
-package com.ynap.dpetapi
+package com.none2clever.dapi
 
 import cats.effect.concurrent.Ref
 import cats.effect.{ConcurrentEffect, ContextShift, ExitCode, IO, Timer}
 import cats.implicits._
-import com.ynap.dpetapi.endpoints.example.ExampleResource
-import com.ynap.dpetapi.endpoints._
+import com.none2clever.dapi.endpoints.{DistanceHandlerImpl, StaticContentHandler, SysOpsHandler}
+import com.none2clever.dapi.endpoints.distance.DistanceResource
 
 import fs2.Stream
 import fs2.concurrent.SignallingRef
@@ -31,7 +31,7 @@ object DpetapiServer {
       httpApp = (
         //-------------------------------------------
         // Add all route handler implementations here
-        new ExampleResource().routes(new ExampleHandlerImpl())
+        new DistanceResource().routes(new DistanceHandlerImpl())
           <+> Router("/system" -> SysOpsHandler.routes(signal))
           <+> new StaticContentHandler().routes(C)
         // ------------------------------------------
