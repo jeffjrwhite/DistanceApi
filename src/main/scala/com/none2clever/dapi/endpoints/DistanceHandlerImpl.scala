@@ -17,6 +17,7 @@ import cats.implicits.{catsStdInstancesForVector, catsSyntaxParallelTraverse}
 import com.none2clever.dapi.AppConfig
 import com.none2clever.dapi.endpoints.definitions.DistanceResponse
 import com.none2clever.dapi.endpoints.distance.{DistanceHandler, GetDistanceResponse}
+import com.none2clever.dapi.models.{Coordinate, DistanceCalculation, GreatCircleRadiusEnum}
 
 import scala.concurrent.ExecutionContext.global
 import scala.util.{Failure, Success, Try}
@@ -28,16 +29,11 @@ class DistanceHandlerImpl[F[_] : Applicative]() extends DistanceHandler[F] with 
     units: Option[String]
   ): F[GetDistanceResponse] = {
 
-    import io.circe.syntax._
-    case class Coordinate(latitude: Double, longitude: Double)
-    implicit val encodeFieldType: Encoder[Coordinate] =
-      Encoder.forProduct2("latitude", "longitude")(Coordinate.unapply(_).get)
-
     implicit val cs: ContextShift[IO] = IO.contextShift(global)
     implicit val timer: Timer[IO] = IO.timer(global)
     val blockingEC = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(5))
     val httpClient: Client[IO] = JavaNetClientBuilder[IO](blockingEC).create
-    def getLocation(name: String) = { //: IO[Coordinate] = {
+    def getLocation(name: String): IO[Coordinate] = {
       val result = httpClient.expect[Coordinate](s"${AppConfig.getConfigOrElseDefault("geocodingservice.uri", "http://localhost:8080")}/geocoding?name=$name")
       result
     }
@@ -50,13 +46,32 @@ class DistanceHandlerImpl[F[_] : Applicative]() extends DistanceHandler[F] with 
         logger.error(ex.getLocalizedMessage)
         throw ex
     }
-    val calculations = locations
+    val calc = DistanceCalculation(
+      locations.head,
+      locations.tail.head,
+      GreatCircleRadiusEnum.withName(units.getOrElse("KM")))
+    val distance = calc.getDistance
+    import io.circe.syntax._
+    case class CityLocation(
+                      name: String,
+                      location: Coordinate,
+                      distance: Double,
+    )
+    implicit val encodeFieldTypeCoordinate: Encoder[Coordinate] =
+      Encoder.forProduct2("latitude", "longitude")(Coordinate.unapply(_).get)
+    implicit val encodeFieldTypeCityLocation: Encoder[CityLocation] =
+      Encoder.forProduct3("name", "location", "distance")(CityLocation.unapply(_).get)
+    val calculations = Vector(CityLocation(cities.head, locations.head, 0.0),
+                       CityLocation(cities.tail.head, locations.tail.head, distance))
     val jsonList = Some(calculations.map(x => x.asJson).toIndexedSeq)
     import cats.implicits._
     for {
       distances <- jsonList.pure[F]
-    } yield
-      respond.Ok(DistanceResponse(Some(distances.size), units, distances))
+    } yield {
+      val total = calculations.map(x => x.distance).sum
+      val totalBigDecimal: BigDecimal = total
+      respond.Ok(DistanceResponse(Some(calculations.size), units, Some(totalBigDecimal), distances))
+    }
   }
 
 }
