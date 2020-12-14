@@ -37,8 +37,8 @@ class DistanceHandlerImpl[F[_] : Applicative]() extends DistanceHandler[F] with 
       LocationCache.getCachedLocation(name) match {
         case None =>
           retryForSecondsUntilSuccess[IO[Coordinate]](
-            Try(httpClient.expect[Coordinate](s"${AppConfig.getConfigOrElseDefault("geocodingservice.uri", "http://localhost:8080")}/geocoding?name=$name"))
-          )
+            Try(httpClient.expect[Coordinate](s"${AppConfig.getConfigOrElseDefault("geocodingservice.uri",
+              "http://localhost:8080")}/geocoding?name=$name")),30, 5)
         case Some(coordinate) =>
           IO(coordinate)
       }
@@ -82,7 +82,7 @@ class DistanceHandlerImpl[F[_] : Applicative]() extends DistanceHandler[F] with 
     }
   }
 
-  def retryForSecondsUntilSuccess[T](fn: => Try[T], seconds: Int = 30, sleep: Int = 2, since: Long = System.currentTimeMillis()): T = {
+  def retryForSecondsUntilSuccess[T](fn: => Try[T], seconds: Int = 30, sleep: Int = 5, since: Long = System.currentTimeMillis()): T = {
     val to: Long = since + (seconds * 1000)
     fn match {
       case Success(x) =>

@@ -14,7 +14,7 @@ lazy val DataProvisioningAPI = (project in file("."))
   .settings(
     organization := "com.none2clever",
     name := "distanceapi",
-    version := "1.0.1.002",
+    version := "1.0.1.003",
     scalaVersion := "2.12.7",
     mainClass in assembly := Some("cucumber.api.cli.Main"),
     libraryDependencies ++= Seq(
