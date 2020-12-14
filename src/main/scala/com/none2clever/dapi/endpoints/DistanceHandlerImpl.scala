@@ -17,8 +17,9 @@ import cats.implicits.{catsStdInstancesForVector, catsSyntaxParallelTraverse}
 import com.none2clever.dapi.AppConfig
 import com.none2clever.dapi.endpoints.definitions.DistanceResponse
 import com.none2clever.dapi.endpoints.distance.{DistanceHandler, GetDistanceResponse}
-import com.none2clever.dapi.models.{Coordinate, DistanceCalculation, GreatCircleRadiusEnum, LocationCache}
+import com.none2clever.dapi.models.{CityLocation, Coordinate, DistanceCalculation, GreatCircleRadiusEnum, LocationCache}
 
+import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.global
 import scala.util.{Failure, Success, Try}
 
@@ -60,11 +61,6 @@ class DistanceHandlerImpl[F[_] : Applicative]() extends DistanceHandler[F] with 
       GreatCircleRadiusEnum.withName(units.getOrElse("KM")))
     val distance = calc.getDistance
     import io.circe.syntax._
-    case class CityLocation(
-                      name: String,
-                      location: Coordinate,
-                      distance: Double,
-    )
     implicit val encodeFieldTypeCoordinate: Encoder[Coordinate] =
       Encoder.forProduct2("latitude", "longitude")(Coordinate.unapply(_).get)
     implicit val encodeFieldTypeCityLocation: Encoder[CityLocation] =
@@ -82,7 +78,8 @@ class DistanceHandlerImpl[F[_] : Applicative]() extends DistanceHandler[F] with 
     }
   }
 
-  def retryForSecondsUntilSuccess[T](fn: => Try[T], seconds: Int = 30, sleep: Int = 5, since: Long = System.currentTimeMillis()): T = {
+  @tailrec
+  final def retryForSecondsUntilSuccess[T](fn: => Try[T], seconds: Int = 30, sleep: Int = 5, since: Long = System.currentTimeMillis()): T = {
     val to: Long = since + (seconds * 1000)
     fn match {
       case Success(x) =>
