@@ -9,12 +9,10 @@ import scala.concurrent.{ExecutionContext, Future}
 import cats.effect.IO.ioEffect
 import io.circe.generic.decoding.DerivedDecoder.deriveDecoder
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
-import cats.implicits.{catsStdInstancesForVector, catsSyntaxParallelTraverse}
 import com.none2clever.dapi.AppConfig
 import com.none2clever.dapi.models.Coordinate
 import com.none2clever.process.{Helpers, LocationCache}
 
-import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
