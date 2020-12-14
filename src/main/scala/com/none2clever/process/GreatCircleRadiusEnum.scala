@@ -1,4 +1,4 @@
-package com.none2clever.dapi.models
+package com.none2clever.process
 
 object GreatCircleRadiusEnum extends Enumeration {
   protected case class Val(radius: Double) extends super.Val

@@ -20,7 +20,7 @@ class CatsIoTest extends FlatSpec with Matchers with BeforeAndAfterAll with Befo
 
   "A CATS IO Resource object will be created that" should "copy a file" taggedAs(ApiTestTag, LinuxTestTag) in {
 
-    assume(true)
+    assume(GlobalSettings.doAllTests)
     println("CATS IO Resource...")
 
     import java.io._
