@@ -40,7 +40,7 @@ object DpetapiServer {
       finalHttpApp = Logger.httpApp(true, true)(httpApp)
       server <- BlazeServerBuilder[F](global)
         .withIdleTimeout(5.minutes)
-        .withResponseHeaderTimeout(5.minutes)
+        .withResponseHeaderTimeout(2.minutes)
         .bindHttp(port, host)
         .withHttpApp(finalHttpApp)
         .withServiceErrorHandler(_ => {

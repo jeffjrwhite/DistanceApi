@@ -81,8 +81,8 @@ class CatsIoTest extends FlatSpec with Matchers with BeforeAndAfterAll with Befo
         _ = println(s"$total characters transferred...")
       } yield total
 
-    val source = new File("C:/Users/whitej/Documents/BitBucket/dpetapi/src/main/resources/api.yaml")
-    val destination = new File("C:/Users/whitej/Documents/BitBucket/dpetapi/src/test/resources/copied.yaml")
+    val source = new File("C:/Users/whitej/Documents/BitBucket/distanceapi/src/main/resources/api.yaml")
+    val destination = new File("C:/Users/whitej/Documents/BitBucket/distanceapi/src/test/resources/copied.yaml")
     val ioLength = copy(source, destination)
     val length = ioLength.unsafeRunSync()
     println(s"Number of characters copied : $length")
