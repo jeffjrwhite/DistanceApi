@@ -1,6 +1,7 @@
-package com.none2clever.dapi.models
+package com.none2clever.process
 
 import com.none2clever.dapi.AppConfig
+import com.none2clever.dapi.models.Coordinate
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable

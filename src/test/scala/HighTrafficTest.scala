@@ -11,8 +11,8 @@ import io.circe.generic.decoding.DerivedDecoder.deriveDecoder
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import cats.implicits.{catsStdInstancesForVector, catsSyntaxParallelTraverse}
 import com.none2clever.dapi.AppConfig
-import com.none2clever.dapi.models.{Coordinate, LocationCache}
-import com.none2clever.process.Helpers
+import com.none2clever.dapi.models.Coordinate
+import com.none2clever.process.{Helpers, LocationCache}
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -87,7 +87,7 @@ class HighTrafficTest extends FlatSpec with Matchers with BeforeAndAfterAll with
     println(locations)
   }
 
-  "This test" should "run in parallel many 'puts' to the location cache to ensure atomicity of put function" taggedAs(ApiTestTag, LinuxTestTag) in {
+  "This test" should "run in parallel many 'puts' to the location cache to ensure atomicity of the put function" taggedAs(ApiTestTag, LinuxTestTag) in {
 
     assume(GlobalSettings.doAllTests)
 
