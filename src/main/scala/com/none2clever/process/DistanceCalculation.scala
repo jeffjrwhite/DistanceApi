@@ -1,4 +1,6 @@
-package com.none2clever.dapi.models
+package com.none2clever.process
+
+import com.none2clever.dapi.models.Coordinate
 
 case class DistanceCalculation(from: Coordinate, to: Coordinate, units: GreatCircleRadiusEnum.Value) {
 

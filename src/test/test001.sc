@@ -1,4 +1,4 @@
-import com.none2clever.dapi.models.GreatCircleRadiusEnum
+import com.none2clever.process.GreatCircleRadiusEnum
 
 val units = GreatCircleRadiusEnum.KM
 val unitsStr = units.toString

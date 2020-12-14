@@ -1,4 +1,6 @@
-import com.none2clever.dapi.models.{Coordinate, DistanceCalculation, GreatCircleRadiusEnum}
+import com.none2clever.dapi.models.Coordinate
+import com.none2clever.process
+import com.none2clever.process.{DistanceCalculation, GreatCircleRadiusEnum}
 import org.scalatest.{FlatSpec, Matchers, _}
 
 class DistanceCalcTest extends FlatSpec with Matchers with BeforeAndAfterAll with BeforeAndAfterEach {
@@ -21,7 +23,7 @@ class DistanceCalcTest extends FlatSpec with Matchers with BeforeAndAfterAll wit
 
   "A DistanceCalculation object will be created that" should "calculate the distance of 1 minute or arc" taggedAs(ApiTestTag, LinuxTestTag) in {
 
-    assume(true)
+    assume(GlobalSettings.doAllTests)
 
     assert(
       DistanceCalculation(
@@ -30,7 +32,7 @@ class DistanceCalcTest extends FlatSpec with Matchers with BeforeAndAfterAll wit
         GreatCircleRadiusEnum.NMI).getUnits == "NMI",
       "Distance calcuation units not correct")
     assert(
-      DistanceCalculation(
+      process.DistanceCalculation(
         Coordinate(0.0,97.4),
         Coordinate(0.016666666666667,97.4),
         GreatCircleRadiusEnum.NMI).getDistance.toInt == 1,

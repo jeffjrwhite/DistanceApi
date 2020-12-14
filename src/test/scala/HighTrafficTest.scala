@@ -12,6 +12,7 @@ import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import cats.implicits.{catsStdInstancesForVector, catsSyntaxParallelTraverse}
 import com.none2clever.dapi.AppConfig
 import com.none2clever.dapi.models.{Coordinate, LocationCache}
+import com.none2clever.process.Helpers
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,46 +40,43 @@ class HighTrafficTest extends FlatSpec with Matchers with BeforeAndAfterAll with
 
   "This test" should "run the Retry process handling many requests to the GeoLocator service" taggedAs(ApiTestTag, LinuxTestTag) in {
 
-    assume(true)
-
-    def getCityVector(num: Int) = (1 to num).toVector.map(x => s"city$x")
-
-    @tailrec
-    def retryForSecondsUntilSuccess[T](fn: => Try[T], seconds: Int = 30, sleep: Int = 5, since: Long = System.currentTimeMillis()): T = {
-      val to: Long = since + (seconds * 1000)
-      fn match {
-        case Success(x) =>
-          x
-        case _ if System.currentTimeMillis() < to =>
-          Thread.sleep(sleep * 1000); retryForSecondsUntilSuccess(fn, seconds, sleep, since)
-        case Failure(e) =>
-          throw e
-      }
-    }
+    assume(GlobalSettings.doAllTests)
 
     implicit val cs: ContextShift[IO] = IO.contextShift(global)
     implicit val timer: Timer[IO] = IO.timer(global)
     val blockingEC = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(5))
     val httpClient: Client[IO] = JavaNetClientBuilder[IO](blockingEC).create
 
-    def getLocation(name: String): IO[Coordinate] = {
+    def getLocation(name: String): Coordinate = {
+      println(s"getLocation $name")
       LocationCache.getCachedLocation(name) match {
         case None =>
-          println("Nothing returned - retry....")
-          retryForSecondsUntilSuccess[IO[Coordinate]](
-            Try(httpClient.expect[Coordinate](s"${
-              AppConfig.getConfigOrElseDefault("geocodingservice.uri",
-                "http://localhost:8080")
-            }/geocoding?name=$name")), 30, 5)
+          println("Nothing in cache - try geocodingservice")
+          Helpers.retryForSecondsUntilSuccess[Coordinate](
+            Try {
+              val res = Try { httpClient.expect[Coordinate](s"${
+                AppConfig.getConfigOrElseDefault("geocodingservice.uri",
+                  "http://localhost:8080")
+              }/geocoding?name=$name").unsafeRunSync()} match {
+                case Success(res) =>
+                  res
+                case Failure(ex) =>
+                  println(ex.getLocalizedMessage)
+                  throw ex
+              }
+              res
+            }, 30, 5)
         case Some(coordinate) =>
           println(coordinate)
-          IO(coordinate)
+          coordinate
       }
     }
 
-    val cities = getCityVector(500)
+    def getCityTestVector(num: Int) = ('A' to 'E').toVector.map(x => s"city$x")
+
+    val cities = getCityTestVector(10)
     val locations = Try {
-      cities.parTraverse(getLocation).unsafeRunSync()
+      cities.map(name => getLocation(name))
     } match {
       case Success(locs) =>
         locs
@@ -91,7 +89,7 @@ class HighTrafficTest extends FlatSpec with Matchers with BeforeAndAfterAll with
 
   "This test" should "run in parallel many 'puts' to the location cache to ensure atomicity of put function" taggedAs(ApiTestTag, LinuxTestTag) in {
 
-    assume(true)
+    assume(GlobalSettings.doAllTests)
 
     def getCityList(num: Int) = (1 to num).toList.map(x => s"city${"%03d".format(x)}")
 
@@ -124,7 +122,7 @@ class HighTrafficTest extends FlatSpec with Matchers with BeforeAndAfterAll with
 
   "This test" should "do too many 'puts' to the location cache" taggedAs(ApiTestTag, LinuxTestTag) in {
 
-    assume(true)
+    assume(GlobalSettings.doAllTests)
 
     def getCityList(num: Int) = (1 to num).toList.map(x => s"city${"%03d".format(x)}")
 

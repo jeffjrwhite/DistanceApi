@@ -17,7 +17,8 @@ import cats.implicits.{catsStdInstancesForVector, catsSyntaxParallelTraverse}
 import com.none2clever.dapi.AppConfig
 import com.none2clever.dapi.endpoints.definitions.DistanceResponse
 import com.none2clever.dapi.endpoints.distance.{DistanceHandler, GetDistanceResponse}
-import com.none2clever.dapi.models.{CityLocation, Coordinate, DistanceCalculation, GreatCircleRadiusEnum, LocationCache}
+import com.none2clever.dapi.models.{CityLocation, Coordinate, LocationCache}
+import com.none2clever.process.{DistanceCalculation, GreatCircleRadiusEnum, Helpers}
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.global
@@ -34,18 +35,33 @@ class DistanceHandlerImpl[F[_] : Applicative]() extends DistanceHandler[F] with 
     implicit val timer: Timer[IO] = IO.timer(global)
     val blockingEC = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(5))
     val httpClient: Client[IO] = JavaNetClientBuilder[IO](blockingEC).create
-    def getLocation(name: String): IO[Coordinate] = {
+
+    def getLocation(name: String): Coordinate = {
       LocationCache.getCachedLocation(name) match {
         case None =>
-          retryForSecondsUntilSuccess[IO[Coordinate]](
-            Try(httpClient.expect[Coordinate](s"${AppConfig.getConfigOrElseDefault("geocodingservice.uri",
-              "http://localhost:8080")}/geocoding?name=$name")),30, 5)
+          println("Nothing in cache - try geocodingservice")
+          Helpers.retryForSecondsUntilSuccess[Coordinate](
+            Try {
+              val res = Try { httpClient.expect[Coordinate](s"${
+                AppConfig.getConfigOrElseDefault("geocodingservice.uri",
+                  "http://localhost:8080")
+              }/geocoding?name=$name").unsafeRunSync()} match {
+                case Success(res) =>
+                  res
+                case Failure(ex) =>
+                  println(ex.getLocalizedMessage)
+                  throw ex
+              }
+              res
+            }, 30, 5)
         case Some(coordinate) =>
-          IO(coordinate)
+          println(coordinate)
+          coordinate
       }
     }
+
     val locations = Try {
-      cities.toVector.parTraverse(getLocation).unsafeRunSync()
+      cities.map(name => getLocation(name))
     } match {
       case Success(locs) =>
         locs
@@ -77,19 +93,5 @@ class DistanceHandlerImpl[F[_] : Applicative]() extends DistanceHandler[F] with 
       respond.Ok(DistanceResponse(Some(calculations.size), units, Some(totalBigDecimal), distances))
     }
   }
-
-  @tailrec
-  final def retryForSecondsUntilSuccess[T](fn: => Try[T], seconds: Int = 30, sleep: Int = 5, since: Long = System.currentTimeMillis()): T = {
-    val to: Long = since + (seconds * 1000)
-    fn match {
-      case Success(x) =>
-        x
-      case _ if System.currentTimeMillis() < to =>
-        Thread.sleep(sleep * 1000); retryForSecondsUntilSuccess(fn, seconds, sleep, since)
-      case Failure(e) =>
-        throw e
-    }
-  }
-
 
 }
