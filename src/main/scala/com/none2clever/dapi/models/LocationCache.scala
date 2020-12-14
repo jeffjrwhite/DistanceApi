@@ -7,8 +7,8 @@ import scala.collection.mutable
 
 object LocationCache extends LazyLogging {
 
-  lazy val maxCacheSize: Int = AppConfig.getConfigOrElseDefault("geocodingservice.cachemaxsize", "1000").toInt
-  lazy val locationCache: mutable.HashMap[String, Coordinate] = new mutable.HashMap()
+  val maxCacheSize: Int = AppConfig.getConfigOrElseDefault("geocodingservice.cachemaxsize", "1000").toInt
+  val locationCache: mutable.HashMap[String, Coordinate] = new mutable.HashMap()
 
   def cacheLocations(cityLocations: Seq[(String, Coordinate)]):Unit = {
     for (location <- cityLocations) {
