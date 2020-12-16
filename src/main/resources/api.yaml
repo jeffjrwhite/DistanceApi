@@ -37,6 +37,10 @@ components:
         items:
           type: string
           pattern: '^[a-zA-Z]{3,}$'  # At least 3 alpha characters
+          minLength: 3
+          maxLength: 20
+        minItems: 2
+        maxItems: 2
         uniqueItems: true
       examples:
         oneCity:
